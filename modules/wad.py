@@ -98,10 +98,12 @@ def pack_wad_from_folder(in_folder, out_file):
             for content in range(len(content_list)):
                 dec_content = open(content_list[content], "rb").read()
                 try:
+                    # Attempt to load the content into the correct index.
                     title.content.load_content(dec_content, index, title_key)
                     break
                 except ValueError:
-                    print("Match not found, trying again...")
+                    # Wasn't the right content, so try again.
+                    pass
 
         out_file.write(title.dump_wad())
 
