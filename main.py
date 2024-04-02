@@ -13,6 +13,10 @@ if __name__ == "__main__":
             if len(args) == 3:
                 extract_wad_to_folder(args[1], args[2])
                 exit(0)
+        if "-p" in opts:
+            if len(args) == 3:
+                pack_wad_from_folder(args[1], args[2])
+                exit(0)
         raise SystemExit(f"Usage: {sys.argv[0]} WAD (-u | -p) <input> <output>")
     else:
         raise SystemExit(f"Usage: {sys.argv[0]} WAD (-u | -p) <input> <output>")
