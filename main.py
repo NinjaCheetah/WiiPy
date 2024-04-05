@@ -3,6 +3,7 @@
 
 import sys
 from modules.wad import *
+from modules.nus import *
 
 opts = [opt for opt in sys.argv[1:] if opt.startswith("-")]
 args = [arg for arg in sys.argv[1:] if not arg.startswith("-")]
@@ -18,5 +19,14 @@ if __name__ == "__main__":
                 pack_wad_from_folder(args[1], args[2])
                 exit(0)
         raise SystemExit(f"Usage: {sys.argv[0]} WAD (-u | -p) <input> <output>")
+    elif "NUS" in args:
+        if "-d" in opts:
+            if len(args) == 2:
+                download_title(args[1])
+                exit(0)
+            elif len(args) == 3:
+                download_title(args[1], args[2])
+                exit(0)
+        raise SystemExit(f"Usage: {sys.argv[0]} NUS -d <Title ID> <Title Version (Optional)>")
     else:
         raise SystemExit(f"Usage: {sys.argv[0]} WAD (-u | -p) <input> <output>")
