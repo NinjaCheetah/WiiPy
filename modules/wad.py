@@ -15,14 +15,14 @@ def extract_wad_to_folder(in_file: str, out_folder: str):
         out_folder.mkdir()
 
     with open(in_file, "rb") as wad_file:
-        wad = libWiiPy.WAD()
+        wad = libWiiPy.title.WAD()
         wad.load(wad_file.read())
 
-        tmd = libWiiPy.TMD()
+        tmd = libWiiPy.title.TMD()
         tmd.load(wad.get_tmd_data())
-        ticket = libWiiPy.Ticket()
+        ticket = libWiiPy.title.Ticket()
         ticket.load(wad.get_ticket_data())
-        content_region = libWiiPy.ContentRegion()
+        content_region = libWiiPy.title.ContentRegion()
         content_region.load(wad.get_content_data(), tmd.content_records)
 
         title_key = ticket.get_title_key()
@@ -81,7 +81,7 @@ def pack_wad_from_folder(in_folder, out_file):
         raise FileNotFoundError("Cannot find any contents! Exiting...")
 
     with open(out_file, "wb") as out_file:
-        title = libWiiPy.Title()
+        title = libWiiPy.title.Title()
 
         title.load_tmd(open(tmd_file, "rb").read())
         title.load_ticket(open(ticket_file, "rb").read())
@@ -106,4 +106,3 @@ def pack_wad_from_folder(in_folder, out_file):
                     pass
 
         out_file.write(title.dump_wad())
-
