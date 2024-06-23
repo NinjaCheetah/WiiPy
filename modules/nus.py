@@ -1,5 +1,5 @@
-# "nus.py" from libWiiPy-cli by NinjaCheetah
-# https://github.com/NinjaCheetah/libWiiPy-cli
+# "nus.py" from WiiPy by NinjaCheetah
+# https://github.com/NinjaCheetah/WiiPy
 
 import libWiiPy
 

@@ -22,11 +22,13 @@ var/
 wheels/
 share/python-wheels/
 *.egg-info/
-main.build/
-main.dist/
+*.build/
+*.dist/
+*.onefile-build/
 .installed.cfg
 *.egg
 MANIFEST
+*.bin
 
 # PyInstaller
 #  Usually these files are written by a python script from a template
@@ -164,6 +166,9 @@ cython_debug/
 # Allows me to keep TMD files in my repository folder for testing without accidentally publishing them
 *.tmd
 *.wad
+*.app
+*.arc
+*.ash
 out_prod/
 remakewad.pl
 

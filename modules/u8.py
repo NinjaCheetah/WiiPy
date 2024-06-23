@@ -1,5 +1,5 @@
-# "u8.py" from libWiiPy-cli by NinjaCheetah
-# https://github.com/NinjaCheetah/libWiiPy-cli
+# "u8.py" from WiiPy by NinjaCheetah
+# https://github.com/NinjaCheetah/WiiPy
 
 import os
 import libWiiPy
