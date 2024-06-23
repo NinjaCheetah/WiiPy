@@ -1,0 +1,97 @@
+# This workflow will install Python dependencies, run tests and lint with a single version of Python
+# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-python
+
+name: Python application
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+permissions:
+  contents: read
+
+jobs:
+  build-linux:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+    - name: Install ccache for Nuitka
+      run: sudo apt update && sudo apt install -y ccache libicu70
+    - name: Set up Python 3.11
+      uses: actions/setup-python@v5
+      with:
+        python-version: "3.11"
+    - name: Install Dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+    - name: Build Package
+      run: |
+        nuitka3 --show-progress --assume-yes-for-downloads --onefile wiipy.py
+    - name: Prepare Package for Upload
+      run: |
+        mv wiipy.bin ~/wiipy
+        cd ~
+        tar cvf WiiPy.tar wiipy
+    - name: Upload Package
+      uses: actions/upload-artifact@v4.3.0
+      with:
+        path: ~/WiiPy.tar
+        name: WiiPy-linux-bin
+
+  build-macos:
+
+    runs-on: macos-12
+
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+      - name: Build Package
+        run: |
+          nuitka3 --show-progress --assume-yes-for-downloads --standalone wiipy.py
+      - name: Prepare Package for Upload
+        run: |
+          mv wiipy.bin ~/wiipy
+          cd ~
+          tar cvf WiiPy.tar wiipy
+      - name: Upload Package
+        uses: actions/upload-artifact@v4.3.0
+        with:
+          path: ~/WiiPy.tar
+          name: WiiPy-macos-bin
+
+  build-windows:
+
+    runs-on: windows-latest
+
+    steps:
+    - uses: actions/checkout@v4
+    - name: Enable Developer Command Prompt
+      uses: ilammy/msvc-dev-cmd@v1.13.0
+    - name: Set up Python 3.11
+      uses: actions/setup-python@v5
+      with:
+        python-version: "3.11"
+    - name: Install Dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+    - name: Build Package
+      run: |
+        nuitka --show-progress --assume-yes-for-downloads --onefile wiipy.py
+    - name: Upload Package
+      uses: actions/upload-artifact@v4.3.0
+      with:
+        path: D:\a\WiiPy\WiiPy\wiipy.exe
+        name: WiiPy-windows-bin
