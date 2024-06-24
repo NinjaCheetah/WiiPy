@@ -1,23 +1,33 @@
 # "ash.py" from WiiPy by NinjaCheetah
 # https://github.com/NinjaCheetah/WiiPy
 
-import os
+import pathlib
 import libWiiPy
 
 
-def decompress_ash(in_file: str, out_file: str = None):
-    if not os.path.isfile(in_file):
-        raise FileNotFoundError(in_file)
+def handle_ash(args):
+    input_path = pathlib.Path(args.input)
+    output_path = pathlib.Path(args.output)
 
-    ash_file = open(in_file, "rb")
-    ash_data = ash_file.read()
-    ash_file.close()
+    if args.compress:
+        print("Compression is not implemented yet.")
 
-    ash_decompressed = libWiiPy.archive.decompress_ash(ash_data)
+    elif args.decompress:
+        sym_tree_bits = args.sym_bits
+        dist_tree_bits = args.dist_bits
 
-    if out_file is None:
-        out_file = in_file + ".arc"
+        if not input_path.exists():
+            raise FileNotFoundError(input_path)
 
-    ash_out = open(out_file, "wb")
-    ash_out.write(ash_decompressed)
-    ash_out.close()
+        ash_file = open(input_path, "rb")
+        ash_data = ash_file.read()
+        ash_file.close()
+
+        ash_decompressed = libWiiPy.archive.decompress_ash(ash_data, sym_tree_bits=sym_tree_bits,
+                                                           dist_tree_bits=dist_tree_bits)
+
+        ash_out = open(output_path, "wb")
+        ash_out.write(ash_decompressed)
+        ash_out.close()
+
+        print("ASH file decompressed!")

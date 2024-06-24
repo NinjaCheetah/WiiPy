@@ -1,29 +1,37 @@
 # "u8.py" from WiiPy by NinjaCheetah
 # https://github.com/NinjaCheetah/WiiPy
 
-import os
+import pathlib
 import libWiiPy
 
 
-def extract_u8_to_folder(in_file: str, out_folder: str):
-    if not os.path.isfile(in_file):
-        raise FileNotFoundError(in_file)
+def handle_u8(args):
+    input_path = pathlib.Path(args.input)
+    output_path = pathlib.Path(args.output)
 
-    u8_data = open(in_file, "rb").read()
+    if args.pack:
+        try:
+            u8_data = libWiiPy.archive.pack_u8(input_path)
+        except ValueError:
+            print("Error: Specified input file/folder does not exist!")
+            return
 
-    try:
-        libWiiPy.archive.extract_u8(u8_data, out_folder)
-    except ValueError:
-        print("Specified output folder already exists!")
+        out_file = open(output_path, "wb")
+        out_file.write(u8_data)
+        out_file.close()
 
+        print("U8 archive packed!")
 
-def pack_u8_from_folder(in_folder: str, out_file: str):
-    try:
-        u8_data = libWiiPy.archive.pack_u8(in_folder)
-    except ValueError:
-        print("Specified input file/folder does not exist!")
-        return
+    elif args.unpack:
+        if not input_path.exists():
+            raise FileNotFoundError(args.input)
 
-    out_file = open(out_file, "wb")
-    out_file.write(u8_data)
-    out_file.close()
+        u8_data = open(input_path, "rb").read()
+
+        if output_path.exists():
+            print("Error: Specified output directory already exists!")
+            return
+
+        libWiiPy.archive.extract_u8(u8_data, str(output_path))
+
+        print("U8 archive unpacked!")
