@@ -2,6 +2,7 @@
 # https://github.com/NinjaCheetah/WiiPy
 
 import argparse
+from importlib.metadata import version
 
 from modules.wad import *
 from modules.nus import *
@@ -9,7 +10,10 @@ from modules.u8 import *
 from modules.ash import *
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="WiiPy is a simple CLI tool to manage file formats used by the Wii.")
+    parser = argparse.ArgumentParser(
+        description="WiiPy is a simple command line tool to manage file formats used by the Wii.")
+    parser.add_argument("--version", action="version",
+                        version=f"WiiPy v1.0.0, based on libWiiPy v{version('libWiiPy')} (from branch \'main\')")
     subparsers = parser.add_subparsers(dest="subcommand", required=True)
 
     wad_parser = subparsers.add_parser("wad", help="pack/unpack a WAD file",
@@ -26,7 +30,7 @@ if __name__ == "__main__":
     nus_parser.set_defaults(func=handle_nus)
     nus_parser.add_argument("tid", metavar="TID", type=str, help="Title ID to download")
     nus_parser.add_argument("-v", "--version", metavar="VERSION", type=int,
-                            help="Version to download")
+                            help="version to download (optional)")
 
     u8_parser = subparsers.add_parser("u8", help="pack/unpack a U8 archive",
                                       description="pack/unpack a U8 archive")
