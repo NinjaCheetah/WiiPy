@@ -10,12 +10,14 @@ from modules.u8 import *
 from modules.ash import *
 
 if __name__ == "__main__":
+    # Main argument parser.
     parser = argparse.ArgumentParser(
         description="WiiPy is a simple command line tool to manage file formats used by the Wii.")
     parser.add_argument("--version", action="version",
                         version=f"WiiPy v1.0.0, based on libWiiPy v{version('libWiiPy')} (from branch \'main\')")
     subparsers = parser.add_subparsers(dest="subcommand", required=True)
 
+    # Argument parser for the WAD subcommand.
     wad_parser = subparsers.add_parser("wad", help="pack/unpack a WAD file",
                                        description="pack/unpack a WAD file")
     wad_parser.set_defaults(func=handle_wad)
@@ -25,6 +27,7 @@ if __name__ == "__main__":
     wad_parser.add_argument("input", metavar="IN", type=str, help="input file")
     wad_parser.add_argument("output", metavar="OUT", type=str, help="output file")
 
+    # Argument parser for the NUS subcommand.
     nus_parser = subparsers.add_parser("nus", help="download a title from the NUS",
                                        description="download a title from the NUS")
     nus_parser.set_defaults(func=handle_nus)
@@ -32,6 +35,7 @@ if __name__ == "__main__":
     nus_parser.add_argument("-v", "--version", metavar="VERSION", type=int,
                             help="version to download (optional)")
 
+    # Argument parser for the U8 subcommand.
     u8_parser = subparsers.add_parser("u8", help="pack/unpack a U8 archive",
                                       description="pack/unpack a U8 archive")
     u8_parser.set_defaults(func=handle_u8)
@@ -41,6 +45,7 @@ if __name__ == "__main__":
     u8_parser.add_argument("input", metavar="IN", type=str, help="input file")
     u8_parser.add_argument("output", metavar="OUT", type=str, help="output file")
 
+    # Argument parser for the ASH subcommand.
     ash_parser = subparsers.add_parser("ash", help="compress/decompress an ASH file",
                                        description="compress/decompress an ASH file")
     ash_parser.set_defaults(func=handle_ash)
@@ -54,6 +59,6 @@ if __name__ == "__main__":
     ash_parser.add_argument("--dist-bits", metavar="DIST_BITS", type=int,
                             help="number of bits in each distance tree leaf (default: 11)", default=11)
 
+    # Parse all the args, and call the appropriate function with all of those args if a valid subcommand was passed.
     args = parser.parse_args()
-
     args.func(args)

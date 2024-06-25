@@ -6,6 +6,8 @@ import libWiiPy
 
 def handle_nus(args):
     title_version = None
+
+    # Check if --version was passed, because it'll be None if it wasn't.
     if args.version is not None:
         try:
             title_version = int(args.version)
@@ -13,6 +15,7 @@ def handle_nus(args):
             print("Enter a valid integer for the Title Version.")
             return
 
+    # libWiiPy accepts a title version of "None" and will just use the latest available version if it gets it.
     title = libWiiPy.title.download_title(args.tid, title_version)
 
     file_name = args.tid + "-v" + str(title.tmd.title_version) + ".wad"

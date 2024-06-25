@@ -10,48 +10,72 @@ def handle_wad(args):
     input_path = pathlib.Path(args.input)
     output_path = pathlib.Path(args.output)
 
+    # Code for if the --pack argument was passed.
     if args.pack:
+        # Make sure input path both exists and is a directory. Separate checks because this provides more relevant
+        # errors than just a NotADirectoryError if the actual issue is that there's nothing at all.
         if not input_path.exists():
             raise FileNotFoundError(input_path)
         if not input_path.is_dir():
             raise NotADirectoryError(input_path)
 
-        tmd_file = list(input_path.glob("*.tmd"))[0]
-        if not tmd_file.exists():
-            raise FileNotFoundError("Cannot find a TMD! Exiting...")
+        # Get a list of all files ending in .tmd, and then make sure that that list has *only* 1 entry. More than 1
+        # means we can't pack a WAD because we couldn't really tell which TMD is intended for this WAD.
+        tmd_list = list(input_path.glob('*.tmd'))
+        if len(tmd_list) > 1:
+            raise FileExistsError("More than one TMD file was found! Only one TMD can be packed into a WAD.")
+        elif len(tmd_list) == 0:
+            raise FileNotFoundError("No TMD file found! Cannot pack WAD.")
+        else:
+            tmd_file = tmd_list[0]
 
-        ticket_file = list(input_path.glob("*.tik"))[0]
-        if not ticket_file.exists():
-            raise FileNotFoundError("Cannot find a Ticket! Exiting...")
+        # Repeat the same process as above for all .tik files.
+        ticket_list = list(input_path.glob('*.tik'))
+        if len(ticket_list) > 1:
+            raise FileExistsError("More than one Ticket file was found! Only one Ticket can be packed into a WAD.")
+        elif len(ticket_list) == 0:
+            raise FileNotFoundError("No Ticket file found! Cannot pack WAD.")
+        else:
+            ticket_file = ticket_list[0]
 
-        cert_file = list(input_path.glob("*.cert"))[0]
-        if not cert_file.exists():
-            raise FileNotFoundError("Cannot find a cert! Exiting...")
+        # And one more time for all .cert files.
+        cert_list = list(input_path.glob('*.cert'))
+        if len(cert_list) > 1:
+            raise FileExistsError("More than one certificate file was found! Only one certificate can be packed into a "
+                                  "WAD.")
+        elif len(cert_list) == 0:
+            raise FileNotFoundError("No certificate file found! Cannot pack WAD.")
+        else:
+            cert_file = cert_list[0]
 
+        # Make sure that there's at least one content to pack.
         content_files = list(input_path.glob("*.app"))
         if not content_files:
-            raise FileNotFoundError("Cannot find any contents! Exiting...")
+            raise FileNotFoundError("No contents found! Cannot pack WAD.")
 
+        # Open the output file, and load all the component files that we've now verified we have into a libWiiPy Title()
+        # object.
         with open(output_path, "wb") as output_path:
             title = libWiiPy.title.Title()
 
             title.load_tmd(open(tmd_file, "rb").read())
             title.load_ticket(open(ticket_file, "rb").read())
             title.wad.set_cert_data(open(cert_file, "rb").read())
+            # Footers are not super common and are not required, so we don't care about one existing until we get to
+            # the step where we'd pack it.
             footer_file = list(input_path.glob("*.footer"))[0]
             if footer_file.exists():
                 title.wad.set_meta_data(open(footer_file, "rb").read())
+            # Method to ensure that the title's content records match between the TMD() and ContentRegion() objects.
             title.load_content_records()
 
-            title_key = title.ticket.get_title_key()
-
-            content_list = list(input_path.glob("*.app"))
+            # Iterate over every file in the content_files list, and attempt to load it into the Title().
             for index in range(len(title.content.content_records)):
-                for content in range(len(content_list)):
-                    dec_content = open(content_list[content], "rb").read()
+                for content in range(len(content_files)):
+                    dec_content = open(content_files[content], "rb").read()
                     try:
                         # Attempt to load the content into the correct index.
-                        title.content.load_content(dec_content, index, title_key)
+                        title.load_content(dec_content, index)
                         break
                     except ValueError:
                         # Wasn't the right content, so try again.
@@ -61,12 +85,14 @@ def handle_wad(args):
 
         print("WAD file packed!")
 
+    # Code for if the --unpack argument was passed.
     elif args.unpack:
         if not input_path.exists():
             raise FileNotFoundError(input_path)
         if not output_path.is_dir():
             output_path.mkdir()
 
+        # Step through each component of a WAD and dump it to a file.
         with open(args.input, "rb") as wad_file:
             title = libWiiPy.title.Title()
             title.load_wad(wad_file.read())
