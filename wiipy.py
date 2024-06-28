@@ -34,6 +34,7 @@ if __name__ == "__main__":
     nus_parser.add_argument("tid", metavar="TID", type=str, help="Title ID to download")
     nus_parser.add_argument("-v", "--version", metavar="VERSION", type=int,
                             help="version to download (optional)")
+    nus_parser.add_argument("-o", "--output", metavar="OUT", type=str, help="output file (optional)")
 
     # Argument parser for the U8 subcommand.
     u8_parser = subparsers.add_parser("u8", help="pack/unpack a U8 archive",
