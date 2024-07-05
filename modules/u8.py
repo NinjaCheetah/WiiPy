@@ -30,12 +30,8 @@ def handle_u8(args):
 
         u8_data = open(input_path, "rb").read()
 
-        # Ensure the output directory doesn't already exist, because libWiiPy wants to create a new one to ensure that
-        # the contents of the U8 archive are extracted correctly.
-        if output_path.exists():
-            print("Error: Specified output directory already exists!")
-            return
-
+        # Output path is deliberately not checked in any way because libWiiPy already has those checks, and it's easier
+        # and cleaner to only have one component doing all the checks.
         libWiiPy.archive.extract_u8(u8_data, str(output_path))
 
         print("U8 archive unpacked!")

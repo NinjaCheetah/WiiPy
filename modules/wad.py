@@ -1,6 +1,7 @@
 # "wad.py" from WiiPy by NinjaCheetah
 # https://github.com/NinjaCheetah/WiiPy
 
+import os
 import pathlib
 import binascii
 import libWiiPy
@@ -89,8 +90,14 @@ def handle_wad(args):
     elif args.unpack:
         if not input_path.exists():
             raise FileNotFoundError(input_path)
-        if not output_path.is_dir():
-            output_path.mkdir()
+        # Check if the output path already exists, and if it does, ensure that it is both a directory and empty.
+        if output_path.exists():
+            if output_path.is_dir() and next(os.scandir(output_path), None):
+                raise ValueError("Output folder is not empty!")
+            elif output_path.is_file():
+                raise ValueError("A file already exists with the provided name!")
+        else:
+            os.mkdir(output_path)
 
         # Step through each component of a WAD and dump it to a file.
         with open(args.input, "rb") as wad_file:
