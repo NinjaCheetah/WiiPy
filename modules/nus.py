@@ -9,10 +9,10 @@ def handle_nus(args):
     title_version = None
     file_path = None
     tid = args.tid
-    if args.wiiu:
-        use_wiiu_servers = True
-    else:
+    if args.wii:
         use_wiiu_servers = False
+    else:
+        use_wiiu_servers = True
     if args.verbose:
         verbose = True
     else:

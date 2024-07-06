@@ -14,7 +14,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(
         description="WiiPy is a simple command line tool to manage file formats used by the Wii.")
     parser.add_argument("--version", action="version",
-                        version=f"WiiPy v1.0.0, based on libWiiPy v{version('libWiiPy')} (from branch \'main\')")
+                        version=f"WiiPy v1.1.0, based on libWiiPy v{version('libWiiPy')} (from branch \'main\')")
     subparsers = parser.add_subparsers(dest="subcommand", required=True)
 
     # Argument parser for the WAD subcommand.
@@ -39,7 +39,7 @@ if __name__ == "__main__":
     nus_parser.add_argument("-o", "--output", metavar="OUT", type=str, help="output file (optional)")
     nus_parser.add_argument("--verbose", help="output more information about the current download",
                             action="store_true")
-    nus_parser.add_argument("-w", "--wiiu", help="use Wii U servers for faster downloads",
+    nus_parser.add_argument("-w", "--wii", help="use original Wii NUS instead of the Wii U servers",
                             action="store_true")
 
     # Argument parser for the U8 subcommand.
