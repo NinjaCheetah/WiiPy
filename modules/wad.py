@@ -70,6 +70,11 @@ def handle_wad(args):
             # Method to ensure that the title's content records match between the TMD() and ContentRegion() objects.
             title.load_content_records()
 
+            # Nullify TMD/Ticket signatures here if the argument was passed.
+            if args.null_sigs:
+                title.tmd.signature = b'\x00' * 256
+                title.ticket.signature = b'\x00' * 256
+
             # Iterate over every file in the content_files list, and attempt to load it into the Title().
             for index in range(len(title.content.content_records)):
                 for content in range(len(content_files)):

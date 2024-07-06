@@ -26,6 +26,8 @@ if __name__ == "__main__":
     wad_group.add_argument("-u", "--unpack", help="unpack a WAD file to a directory", action="store_true")
     wad_parser.add_argument("input", metavar="IN", type=str, help="input file")
     wad_parser.add_argument("output", metavar="OUT", type=str, help="output file")
+    wad_parser.add_argument("--null-sigs", help="nullify signatures in the TMD and Ticket (packing only)",
+                            action="store_true")
 
     # Argument parser for the NUS subcommand.
     nus_parser = subparsers.add_parser("nus", help="download a title from the NUS",
@@ -35,6 +37,10 @@ if __name__ == "__main__":
     nus_parser.add_argument("-v", "--version", metavar="VERSION", type=int,
                             help="version to download (optional)")
     nus_parser.add_argument("-o", "--output", metavar="OUT", type=str, help="output file (optional)")
+    nus_parser.add_argument("--verbose", help="output more information about the current download",
+                            action="store_true")
+    nus_parser.add_argument("-w", "--wiiu", help="use Wii U servers for faster downloads",
+                            action="store_true")
 
     # Argument parser for the U8 subcommand.
     u8_parser = subparsers.add_parser("u8", help="pack/unpack a U8 archive",
