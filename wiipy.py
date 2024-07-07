@@ -14,7 +14,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(
         description="WiiPy is a simple command line tool to manage file formats used by the Wii.")
     parser.add_argument("--version", action="version",
-                        version=f"WiiPy v1.1.0, based on libWiiPy v{version('libWiiPy')} (from branch \'main\')")
+                        version=f"WiiPy v1.2.0, based on libWiiPy v{version('libWiiPy')} (from branch \'main\')")
     subparsers = parser.add_subparsers(dest="subcommand", required=True)
 
     # Argument parser for the WAD subcommand.
@@ -30,17 +30,24 @@ if __name__ == "__main__":
                             action="store_true")
 
     # Argument parser for the NUS subcommand.
-    nus_parser = subparsers.add_parser("nus", help="download a title from the NUS",
-                                       description="download a title from the NUS")
-    nus_parser.set_defaults(func=handle_nus)
-    nus_parser.add_argument("tid", metavar="TID", type=str, help="Title ID to download")
-    nus_parser.add_argument("-v", "--version", metavar="VERSION", type=int,
-                            help="version to download (optional)")
-    nus_parser.add_argument("-o", "--output", metavar="OUT", type=str, help="output file (optional)")
-    nus_parser.add_argument("--verbose", help="output more information about the current download",
-                            action="store_true")
-    nus_parser.add_argument("-w", "--wii", help="use original Wii NUS instead of the Wii U servers",
-                            action="store_true")
+    nus_parser = subparsers.add_parser("nus", help="download data from the NUS",
+                                       description="download from the NUS")
+    nus_subparsers = nus_parser.add_subparsers(dest="subcommand", required=True)
+    # Title NUS subcommand.
+    nus_title_parser = nus_subparsers.add_parser("title", help="download a title from the NUS",
+                                                 description="download a title from the NUS")
+    nus_title_parser.set_defaults(func=handle_nus_title)
+    nus_title_parser.add_argument("tid", metavar="TID", type=str, help="Title ID to download")
+    nus_title_parser.add_argument("-v", "--version", metavar="VERSION", type=int,
+                                  help="version to download (optional)")
+    nus_title_out_group_label = nus_title_parser.add_argument_group(title="output types (required)")
+    nus_title_out_group = nus_title_out_group_label.add_mutually_exclusive_group(required=True)
+    nus_title_out_group.add_argument("-o", "--output", metavar="OUT", type=str,
+                                     help="download the title to a folder")
+    nus_title_out_group.add_argument("-w", "--wad", metavar="WAD", type=str,
+                                     help="pack a wad with the provided name")
+    nus_title_parser.add_argument("--wii", help="use original Wii NUS instead of the Wii U servers",
+                                  action="store_true")
 
     # Argument parser for the U8 subcommand.
     u8_parser = subparsers.add_parser("u8", help="pack/unpack a U8 archive",

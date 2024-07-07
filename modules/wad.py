@@ -100,7 +100,7 @@ def handle_wad(args):
             if output_path.is_dir() and next(os.scandir(output_path), None):
                 raise ValueError("Output folder is not empty!")
             elif output_path.is_file():
-                raise ValueError("A file already exists with the provided name!")
+                raise ValueError("A file already exists with the provided directory name!")
         else:
             os.mkdir(output_path)
 
