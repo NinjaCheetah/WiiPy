@@ -26,7 +26,7 @@ if __name__ == "__main__":
     wad_group.add_argument("-u", "--unpack", help="unpack a WAD file to a directory", action="store_true")
     wad_parser.add_argument("input", metavar="IN", type=str, help="input file")
     wad_parser.add_argument("output", metavar="OUT", type=str, help="output file")
-    wad_parser.add_argument("--null-sigs", help="nullify signatures in the TMD and Ticket (packing only)",
+    wad_parser.add_argument("--fakesign", help="fakesign the TMD and Ticket (trucha bug)",
                             action="store_true")
 
     # Argument parser for the NUS subcommand.

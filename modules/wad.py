@@ -3,6 +3,7 @@
 
 import os
 import pathlib
+import hashlib
 import binascii
 import libWiiPy
 
@@ -70,10 +71,31 @@ def handle_wad(args):
             # Method to ensure that the title's content records match between the TMD() and ContentRegion() objects.
             title.load_content_records()
 
-            # Nullify TMD/Ticket signatures here if the argument was passed.
-            if args.null_sigs:
-                title.tmd.signature = b'\x00' * 256
+            # Fakesign the TMD and Ticket using the trucha bug, if enabled.
+            # This is done by changing an unused portion of both the TMD and Ticket, and then calculating the SHA-1 hash
+            # of the TMD/Ticket without the signature, and seeing if it begins with a null byte.
+            if args.fakesign:
+                tmd = title.tmd
+                tmd.signature = b'\x00' * 256
+                current_int = 0
+                test_hash = 'gggggggggggggggggggggggggggggggggggggggg'
+                while test_hash[:2] != '00':
+                    current_int += 1
+                    tmd.minor_version = current_int
+                    test_hash = hashlib.sha1(tmd.dump()[320:]).hexdigest()
+                title.tmd = tmd
+
+                ticket = title.ticket
                 title.ticket.signature = b'\x00' * 256
+                current_int = 0
+                test_hash = 'gggggggggggggggggggggggggggggggggggggggg'
+                while test_hash[:2] != '00':
+                    current_int += 1
+                    data_to_edit = ticket.unknown2
+                    data_to_edit = int.to_bytes(current_int, 2) + data_to_edit[:2]
+                    ticket.unknown2 = data_to_edit
+                    test_hash = hashlib.sha1(ticket.dump()[320:]).hexdigest()
+                title.ticket = ticket
 
             # Iterate over every file in the content_files list, and attempt to load it into the Title().
             for index in range(len(title.content.content_records)):
