@@ -48,6 +48,15 @@ if __name__ == "__main__":
                                      help="pack a wad with the provided name")
     nus_title_parser.add_argument("--wii", help="use original Wii NUS instead of the Wii U servers",
                                   action="store_true")
+    # Content NUS subcommand.
+    nus_content_parser = nus_subparsers.add_parser("content", help="download a specific content from the NUS",
+                                                   description="download a specific content from the NUS")
+    nus_content_parser.set_defaults(func=handle_nus_content)
+    nus_content_parser.add_argument("tid", metavar="TID", type=str, help="Title ID the content belongs to")
+    nus_content_parser.add_argument("cid", metavar="CID", type=int, help="Content ID to download")
+    nus_content_parser.add_argument("-v", "--version", metavar="VERSION", type=int,
+                                    help="version this content belongs to (required for decryption)")
+    nus_content_parser.add_argument("-d", "--decrypt", action="store_true", help="decrypt this content")
 
     # Argument parser for the U8 subcommand.
     u8_parser = subparsers.add_parser("u8", help="pack/unpack a U8 archive",

@@ -2,6 +2,7 @@
 # https://github.com/NinjaCheetah/WiiPy
 
 import os
+import hashlib
 import pathlib
 import libWiiPy
 
@@ -134,3 +135,55 @@ def handle_nus_title(args):
         file.close()
 
     print("Downloaded title with Title ID \"" + args.tid + "\"!")
+
+
+def handle_nus_content(args):
+    tid = args.tid
+    cid = args.cid
+    version = args.version
+    if args.decrypt:
+        decrypt_content = True
+    else:
+        decrypt_content = False
+
+    content_file_name = hex(cid)[2:]
+    while len(content_file_name) < 8:
+        content_file_name = "0" + content_file_name
+
+    content_data = libWiiPy.title.download_content(tid, cid)
+
+    if decrypt_content is True:
+        content_file_name = content_file_name + ".app"
+        tmd = libWiiPy.title.TMD()
+        tmd.load(libWiiPy.title.download_tmd(tid, version))
+        try:
+            ticket = libWiiPy.title.Ticket()
+            ticket.load(libWiiPy.title.download_ticket(tid))
+        except ValueError:
+            print("  - No Ticket is available!")
+            return
+
+        content_hash = 'gggggggggggggggggggggggggggggggggggggggg'
+        content_size = 0
+        content_index = 0
+        for record in tmd.content_records:
+            if record.content_id == cid:
+                content_hash = record.content_hash.decode()
+                content_size = record.content_size
+                content_index = record.index
+
+        content_dec = libWiiPy.title.decrypt_content(content_data, ticket.get_title_key(), content_index, content_size)
+        content_dec_hash = hashlib.sha1(content_dec).hexdigest()
+        if content_hash != content_dec_hash:
+            raise ValueError("The decrypted content provided does not match the record at the provided index. \n"
+                             "Expected hash is: {}\n".format(content_hash) +
+                             "Actual hash is: {}".format(content_dec_hash))
+        file = open(content_file_name, "wb")
+        file.write(content_dec)
+        file.close()
+    else:
+        file = open(content_file_name, "wb")
+        file.write(content_data)
+        file.close()
+
+    print("Downloaded content with Content ID \"" + str(cid) + "\"!")
