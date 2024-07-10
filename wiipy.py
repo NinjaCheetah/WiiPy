@@ -53,7 +53,8 @@ if __name__ == "__main__":
                                                    description="download a specific content from the NUS")
     nus_content_parser.set_defaults(func=handle_nus_content)
     nus_content_parser.add_argument("tid", metavar="TID", type=str, help="Title ID the content belongs to")
-    nus_content_parser.add_argument("cid", metavar="CID", type=int, help="Content ID to download")
+    nus_content_parser.add_argument("cid", metavar="CID", type=str,
+                                    help="Content ID to download (in \"000000xx\" format)")
     nus_content_parser.add_argument("-v", "--version", metavar="VERSION", type=int,
                                     help="version this content belongs to (required for decryption)")
     nus_content_parser.add_argument("-d", "--decrypt", action="store_true", help="decrypt this content")

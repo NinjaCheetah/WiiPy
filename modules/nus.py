@@ -4,6 +4,7 @@
 import os
 import hashlib
 import pathlib
+import binascii
 import libWiiPy
 
 
@@ -146,11 +147,13 @@ def handle_nus_content(args):
     else:
         decrypt_content = False
 
-    content_file_name = hex(cid)[2:]
+    content_id = int.from_bytes(binascii.unhexlify(cid))
+
+    content_file_name = hex(content_id)[2:]
     while len(content_file_name) < 8:
         content_file_name = "0" + content_file_name
 
-    content_data = libWiiPy.title.download_content(tid, cid)
+    content_data = libWiiPy.title.download_content(tid, content_id)
 
     if decrypt_content is True:
         content_file_name = content_file_name + ".app"
@@ -167,7 +170,7 @@ def handle_nus_content(args):
         content_size = 0
         content_index = 0
         for record in tmd.content_records:
-            if record.content_id == cid:
+            if record.content_id == content_id:
                 content_hash = record.content_hash.decode()
                 content_size = record.content_size
                 content_index = record.index
@@ -186,4 +189,4 @@ def handle_nus_content(args):
         file.write(content_data)
         file.close()
 
-    print("Downloaded content with Content ID \"" + str(cid) + "\"!")
+    print("Downloaded content with Content ID \"" + cid + "\"!")
