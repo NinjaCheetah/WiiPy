@@ -57,6 +57,8 @@ if __name__ == "__main__":
                                     help="Content ID to download (in \"000000xx\" format)")
     nus_content_parser.add_argument("-v", "--version", metavar="VERSION", type=int,
                                     help="version this content belongs to (required for decryption)")
+    nus_content_parser.add_argument("-o", "--output", metavar="OUT", type=str,
+                                    help="path to download the content to (optional)")
     nus_content_parser.add_argument("-d", "--decrypt", action="store_true", help="decrypt this content")
 
     # Argument parser for the U8 subcommand.
