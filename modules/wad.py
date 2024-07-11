@@ -92,7 +92,7 @@ def handle_wad(args):
                 while test_hash[:2] != '00':
                     current_int += 1
                     data_to_edit = ticket.unknown2
-                    data_to_edit = int.to_bytes(current_int, 2) + data_to_edit[:2]
+                    data_to_edit = int.to_bytes(current_int, 2) + data_to_edit[2:]
                     ticket.unknown2 = data_to_edit
                     test_hash = hashlib.sha1(ticket.dump()[320:]).hexdigest()
                 title.ticket = ticket
