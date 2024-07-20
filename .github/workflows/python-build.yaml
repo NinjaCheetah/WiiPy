@@ -31,7 +31,7 @@ jobs:
         pip install -r requirements.txt
     - name: Build Application
       run: |
-        nuitka3 --show-progress --assume-yes-for-downloads --onefile wiipy.py
+        python -m nuitka --show-progress --assume-yes-for-downloads --onefile wiipy.py
     - name: Prepare Package for Upload
       run: |
         mv wiipy.bin ~/wiipy
@@ -59,7 +59,7 @@ jobs:
           pip install -r requirements.txt
       - name: Build Application
         run: |
-          nuitka3 --show-progress --assume-yes-for-downloads --onefile wiipy.py
+          python -m nuitka --show-progress --assume-yes-for-downloads --onefile wiipy.py
       - name: Prepare Package for Upload
         run: |
           mv wiipy.bin ~/wiipy
@@ -89,7 +89,7 @@ jobs:
         pip install -r requirements.txt
     - name: Build Application
       run: |
-        nuitka --show-progress --assume-yes-for-downloads --onefile wiipy.py
+        python -m nuitka --show-progress --assume-yes-for-downloads --onefile wiipy.py
     - name: Upload Application
       uses: actions/upload-artifact@v4.3.0
       with:
