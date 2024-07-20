@@ -106,20 +106,21 @@ def handle_nus_title(args):
     title.content.content_list = content_list
 
     # Try to decrypt the contents for this title if a ticket was available.
-    if can_decrypt is True and output_dir is not None:
-        for content in range(len(title.tmd.content_records)):
-            print(" - Decrypting content " + str(content + 1) + " of " + str(len(title.tmd.content_records)) +
-                  " (Content ID: " + str(title.tmd.content_records[content].content_id) + ")...")
-            dec_content = title.get_content_by_index(content)
-            content_file_name = hex(title.tmd.content_records[content].content_id)[2:]
-            while len(content_file_name) < 8:
-                content_file_name = "0" + content_file_name
-            content_file_name = content_file_name + ".app"
-            dec_content_out = open(output_dir.joinpath(content_file_name), "wb")
-            dec_content_out.write(dec_content)
-            dec_content_out.close()
-    else:
-        print("Title has no Ticket, so content will not be decrypted!")
+    if output_dir is not None:
+        if can_decrypt is True:
+            for content in range(len(title.tmd.content_records)):
+                print(" - Decrypting content " + str(content + 1) + " of " + str(len(title.tmd.content_records)) +
+                      " (Content ID: " + str(title.tmd.content_records[content].content_id) + ")...")
+                dec_content = title.get_content_by_index(content)
+                content_file_name = hex(title.tmd.content_records[content].content_id)[2:]
+                while len(content_file_name) < 8:
+                    content_file_name = "0" + content_file_name
+                content_file_name = content_file_name + ".app"
+                dec_content_out = open(output_dir.joinpath(content_file_name), "wb")
+                dec_content_out.write(dec_content)
+                dec_content_out.close()
+        else:
+            print("Title has no Ticket, so content will not be decrypted!")
 
     # If --wad was passed, pack a WAD and output that.
     if wad_file is not None:
