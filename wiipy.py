@@ -14,7 +14,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(
         description="WiiPy is a simple command line tool to manage file formats used by the Wii.")
     parser.add_argument("--version", action="version",
-                        version=f"WiiPy v1.2.1, based on libWiiPy v{version('libWiiPy')} (from branch \'main\')")
+                        version=f"WiiPy v1.2.2, based on libWiiPy v{version('libWiiPy')} (from branch \'main\')")
     subparsers = parser.add_subparsers(dest="subcommand", required=True)
 
     # Argument parser for the WAD subcommand.
