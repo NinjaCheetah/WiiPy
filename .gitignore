@@ -25,6 +25,7 @@ share/python-wheels/
 *.build/
 *.dist/
 *.onefile-build/
+wiipy
 .installed.cfg
 *.egg
 MANIFEST

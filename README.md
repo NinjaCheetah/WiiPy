@@ -28,3 +28,17 @@ If you'd like to compile WiiPy from Python into something a little more native, 
 python -m nuitka --show-progress --assume-yes-for-downloads --onefile wiipy.py
 ```
 On macOS and Linux, this will give you a binary named `wiipy.bin` in the same directory as the Python file. On Windows, you'll get a binary named `wiipy.exe` instead.
+
+
+### For Linux Users:
+A Makefile has been included to both build and install WiiPy on Linux. This will install `wiipy` to `/usr/bin/`.
+
+First, use make to build WiiPy (this automates the step above):
+```shell
+make linux
+```
+
+Then, run the install command with `sudo` (or your favorite alternative):
+```shell
+sudo make linux-install
+```

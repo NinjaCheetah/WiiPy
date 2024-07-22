@@ -31,10 +31,10 @@ jobs:
         pip install -r requirements.txt
     - name: Build Application
       run: |
-        python -m nuitka --show-progress --assume-yes-for-downloads --onefile wiipy.py
+        python -m nuitka --show-progress --assume-yes-for-downloads --onefile wiipy.py -o wiipy
     - name: Prepare Package for Upload
       run: |
-        mv wiipy.bin ~/wiipy
+        mv wiipy ~/wiipy
         cd ~
         tar cvf WiiPy.tar wiipy
     - name: Upload Application
@@ -59,10 +59,10 @@ jobs:
           pip install -r requirements.txt
       - name: Build Application
         run: |
-          python -m nuitka --show-progress --assume-yes-for-downloads --onefile wiipy.py
+          python -m nuitka --show-progress --assume-yes-for-downloads --onefile wiipy.py -o wiipy
       - name: Prepare Package for Upload
         run: |
-          mv wiipy.bin ~/wiipy
+          mv wiipy ~/wiipy
           cd ~
           tar cvf WiiPy.tar wiipy
       - name: Upload Application
