@@ -13,10 +13,10 @@ from modules.title.wad import *
 if __name__ == "__main__":
     # Main argument parser.
     parser = argparse.ArgumentParser(
-        description="WiiPy is a simple command line tool to manage file formats used by the Wii.")
+        description="A simple command line tool to manage file formats used by the Wii.")
     parser.add_argument("--version", action="version",
                         version=f"WiiPy v1.2.2, based on libWiiPy v{version('libWiiPy')} (from branch \'main\')")
-    subparsers = parser.add_subparsers(dest="subcommand", required=True)
+    subparsers = parser.add_subparsers(title="subcommands", dest="subcommand", required=True)
 
     # Argument parser for the ASH subcommand.
     ash_parser = subparsers.add_parser("ash", help="compress/decompress an ASH file",
@@ -33,8 +33,8 @@ if __name__ == "__main__":
                             help="number of bits in each distance tree leaf (default: 11)", default=11)
 
     # Argument parser for the fakesign subcommand.
-    fakesign_parser = subparsers.add_parser("fakesign", help="fakesigns a TMD, Ticket, or WAD (trucha bug)",
-                                            description="fakesigns a TMD, Ticket, or WAD (trucha bug)")
+    fakesign_parser = subparsers.add_parser("fakesign", help="fakesign a TMD, Ticket, or WAD (trucha bug)",
+                                            description="fakesign a TMD, Ticket, or WAD (trucha bug)")
     fakesign_parser.set_defaults(func=handle_fakesign)
     fakesign_parser.add_argument("input", metavar="IN", type=str, help="input file")
     fakesign_parser.add_argument("output", metavar="OUT", type=str, help="output file")
