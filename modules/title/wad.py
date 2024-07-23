@@ -1,9 +1,8 @@
-# "wad.py" from WiiPy by NinjaCheetah
+# "modules/title/wad.py" from WiiPy by NinjaCheetah
 # https://github.com/NinjaCheetah/WiiPy
 
 import os
 import pathlib
-import hashlib
 import binascii
 import libWiiPy
 
@@ -23,7 +22,7 @@ def handle_wad(args):
 
         # Get a list of all files ending in .tmd, and then make sure that that list has *only* 1 entry. More than 1
         # means we can't pack a WAD because we couldn't really tell which TMD is intended for this WAD.
-        tmd_list = list(input_path.glob('*.tmd'))
+        tmd_list = list(input_path.glob('*.[tT][mM][dD]'))
         if len(tmd_list) > 1:
             raise FileExistsError("More than one TMD file was found! Only one TMD can be packed into a WAD.")
         elif len(tmd_list) == 0:
@@ -32,7 +31,7 @@ def handle_wad(args):
             tmd_file = tmd_list[0]
 
         # Repeat the same process as above for all .tik files.
-        ticket_list = list(input_path.glob('*.tik'))
+        ticket_list = list(input_path.glob('*.[tT][iI][kK]'))
         if len(ticket_list) > 1:
             raise FileExistsError("More than one Ticket file was found! Only one Ticket can be packed into a WAD.")
         elif len(ticket_list) == 0:
@@ -41,7 +40,7 @@ def handle_wad(args):
             ticket_file = ticket_list[0]
 
         # And one more time for all .cert files.
-        cert_list = list(input_path.glob('*.cert'))
+        cert_list = list(input_path.glob('*.[cC][eE][rR][tT]'))
         if len(cert_list) > 1:
             raise FileExistsError("More than one certificate file was found! Only one certificate can be packed into a "
                                   "WAD.")
@@ -51,7 +50,7 @@ def handle_wad(args):
             cert_file = cert_list[0]
 
         # Make sure that there's at least one content to pack.
-        content_files = list(input_path.glob("*.app"))
+        content_files = list(input_path.glob("*.[aA][pP][pP]"))
         if not content_files:
             raise FileNotFoundError("No contents found! Cannot pack WAD.")
 
@@ -65,7 +64,7 @@ def handle_wad(args):
             title.wad.set_cert_data(open(cert_file, "rb").read())
             # Footers are not super common and are not required, so we don't care about one existing until we get to
             # the step where we'd pack it.
-            footer_file = list(input_path.glob("*.footer"))[0]
+            footer_file = list(input_path.glob("*.[fF][oO][oO][tT][eE][rR]"))[0]
             if footer_file.exists():
                 title.wad.set_meta_data(open(footer_file, "rb").read())
             # Method to ensure that the title's content records match between the TMD() and ContentRegion() objects.

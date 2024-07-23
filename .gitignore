@@ -166,6 +166,9 @@ cython_debug/
 
 # Allows me to keep TMD files in my repository folder for testing without accidentally publishing them
 *.tmd
+*.tik
+*.cert
+*.footer
 *.wad
 *.app
 *.arc

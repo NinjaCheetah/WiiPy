@@ -1,4 +1,4 @@
-# "nus.py" from WiiPy by NinjaCheetah
+# "modules/title/nus.py" from WiiPy by NinjaCheetah
 # https://github.com/NinjaCheetah/WiiPy
 
 import os

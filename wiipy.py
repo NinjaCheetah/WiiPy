@@ -4,10 +4,11 @@
 import argparse
 from importlib.metadata import version
 
-from modules.wad import *
-from modules.nus import *
-from modules.u8 import *
-from modules.ash import *
+from modules.archive.ash import *
+from modules.archive.u8 import *
+from modules.title.fakesign import *
+from modules.title.nus import *
+from modules.title.wad import *
 
 if __name__ == "__main__":
     # Main argument parser.
@@ -17,17 +18,26 @@ if __name__ == "__main__":
                         version=f"WiiPy v1.2.2, based on libWiiPy v{version('libWiiPy')} (from branch \'main\')")
     subparsers = parser.add_subparsers(dest="subcommand", required=True)
 
-    # Argument parser for the WAD subcommand.
-    wad_parser = subparsers.add_parser("wad", help="pack/unpack a WAD file",
-                                       description="pack/unpack a WAD file")
-    wad_parser.set_defaults(func=handle_wad)
-    wad_group = wad_parser.add_mutually_exclusive_group(required=True)
-    wad_group.add_argument("-p", "--pack", help="pack a directory to a WAD file", action="store_true")
-    wad_group.add_argument("-u", "--unpack", help="unpack a WAD file to a directory", action="store_true")
-    wad_parser.add_argument("input", metavar="IN", type=str, help="input file")
-    wad_parser.add_argument("output", metavar="OUT", type=str, help="output file")
-    wad_parser.add_argument("--fakesign", help="fakesign the TMD and Ticket (trucha bug)",
-                            action="store_true")
+    # Argument parser for the ASH subcommand.
+    ash_parser = subparsers.add_parser("ash", help="compress/decompress an ASH file",
+                                       description="compress/decompress an ASH file")
+    ash_parser.set_defaults(func=handle_ash)
+    ash_group = ash_parser.add_mutually_exclusive_group(required=True)
+    ash_group.add_argument("-c", "--compress", help="compress a file into an ASH file", action="store_true")
+    ash_group.add_argument("-d", "--decompress", help="decompress an ASH file", action="store_true")
+    ash_parser.add_argument("input", metavar="IN", type=str, help="input file")
+    ash_parser.add_argument("output", metavar="OUT", type=str, help="output file")
+    ash_parser.add_argument("--sym-bits", metavar="SYM_BITS", type=int,
+                            help="number of bits in each symbol tree leaf (default: 9)", default=9)
+    ash_parser.add_argument("--dist-bits", metavar="DIST_BITS", type=int,
+                            help="number of bits in each distance tree leaf (default: 11)", default=11)
+
+    # Argument parser for the fakesign subcommand.
+    fakesign_parser = subparsers.add_parser("fakesign", help="fakesigns a TMD, Ticket, or WAD (trucha bug)",
+                                            description="fakesigns a TMD, Ticket, or WAD (trucha bug)")
+    fakesign_parser.set_defaults(func=handle_fakesign)
+    fakesign_parser.add_argument("input", metavar="IN", type=str, help="input file")
+    fakesign_parser.add_argument("output", metavar="OUT", type=str, help="output file")
 
     # Argument parser for the NUS subcommand.
     nus_parser = subparsers.add_parser("nus", help="download data from the NUS",
@@ -71,19 +81,17 @@ if __name__ == "__main__":
     u8_parser.add_argument("input", metavar="IN", type=str, help="input file")
     u8_parser.add_argument("output", metavar="OUT", type=str, help="output file")
 
-    # Argument parser for the ASH subcommand.
-    ash_parser = subparsers.add_parser("ash", help="compress/decompress an ASH file",
-                                       description="compress/decompress an ASH file")
-    ash_parser.set_defaults(func=handle_ash)
-    ash_group = ash_parser.add_mutually_exclusive_group(required=True)
-    ash_group.add_argument("-c", "--compress", help="compress a file into an ASH file", action="store_true")
-    ash_group.add_argument("-d", "--decompress", help="decompress an ASH file", action="store_true")
-    ash_parser.add_argument("input", metavar="IN", type=str, help="input file")
-    ash_parser.add_argument("output", metavar="OUT", type=str, help="output file")
-    ash_parser.add_argument("--sym-bits", metavar="SYM_BITS", type=int,
-                            help="number of bits in each symbol tree leaf (default: 9)", default=9)
-    ash_parser.add_argument("--dist-bits", metavar="DIST_BITS", type=int,
-                            help="number of bits in each distance tree leaf (default: 11)", default=11)
+    # Argument parser for the WAD subcommand.
+    wad_parser = subparsers.add_parser("wad", help="pack/unpack a WAD file",
+                                       description="pack/unpack a WAD file")
+    wad_parser.set_defaults(func=handle_wad)
+    wad_group = wad_parser.add_mutually_exclusive_group(required=True)
+    wad_group.add_argument("-p", "--pack", help="pack a directory to a WAD file", action="store_true")
+    wad_group.add_argument("-u", "--unpack", help="unpack a WAD file to a directory", action="store_true")
+    wad_parser.add_argument("input", metavar="IN", type=str, help="input file")
+    wad_parser.add_argument("output", metavar="OUT", type=str, help="output file")
+    wad_parser.add_argument("--fakesign", help="fakesign the TMD and Ticket (trucha bug)",
+                            action="store_true")
 
     # Parse all the args, and call the appropriate function with all of those args if a valid subcommand was passed.
     args = parser.parse_args()

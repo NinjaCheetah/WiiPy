@@ -8,3 +8,6 @@ linux-install:
 
 clean:
 	rm wiipy
+	rm -rd wiipy.build
+	rm -rd wiipy.dist
+	rm -rd wiipy.onefile-build
