@@ -1,2 +1,2 @@
 git+https://github.com/NinjaCheetah/libWiiPy
-nuitka==2.3.11
+nuitka
