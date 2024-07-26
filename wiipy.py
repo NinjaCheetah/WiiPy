@@ -90,8 +90,12 @@ if __name__ == "__main__":
     wad_group.add_argument("-u", "--unpack", help="unpack a WAD file to a directory", action="store_true")
     wad_parser.add_argument("input", metavar="IN", type=str, help="input file")
     wad_parser.add_argument("output", metavar="OUT", type=str, help="output file")
-    wad_parser.add_argument("--fakesign", help="fakesign the TMD and Ticket (trucha bug)",
-                            action="store_true")
+    wad_pack_group = wad_parser.add_argument_group(title="packing options")
+    wad_pack_group.add_argument("-f", "--fakesign", help="fakesign the TMD and Ticket (trucha bug)",
+                                action="store_true")
+    wad_unpack_group = wad_parser.add_argument_group(title="unpacking options")
+    wad_unpack_group.add_argument("-s", "--skip-hash", help="skips validating the hashes of decrypted "
+                                  "content", action="store_true")
 
     # Parse all the args, and call the appropriate function with all of those args if a valid subcommand was passed.
     args = parser.parse_args()

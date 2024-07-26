@@ -70,21 +70,15 @@ def handle_wad(args):
             # Method to ensure that the title's content records match between the TMD() and ContentRegion() objects.
             title.load_content_records()
 
+            # Iterate over every file in the content_files list, and set them in the Title().
+            for record in title.content.content_records:
+                index = title.content.content_records.index(record)
+                dec_content = open(content_files[index], "rb").read()
+                title.set_content(dec_content, index)
+
             # Fakesign the TMD and Ticket using the trucha bug, if enabled. This is built-in in libWiiPy v0.4.1+.
             if args.fakesign:
                 title.fakesign()
-
-            # Iterate over every file in the content_files list, and attempt to load it into the Title().
-            for index in range(len(title.content.content_records)):
-                for content in range(len(content_files)):
-                    dec_content = open(content_files[content], "rb").read()
-                    try:
-                        # Attempt to load the content into the correct index.
-                        title.load_content(dec_content, index)
-                        break
-                    except ValueError:
-                        # Wasn't the right content, so try again.
-                        pass
 
             output_path.write(title.dump_wad())
 
@@ -128,10 +122,16 @@ def handle_wad(args):
             meta_out.write(title.wad.get_meta_data())
             meta_out.close()
 
+            # Skip validating hashes if -s/--skip-hash was passed.
+            if args.skip_hash:
+                skip_hash = True
+            else:
+                skip_hash = False
+
             for content_file in range(0, title.tmd.num_contents):
                 content_file_name = "000000" + str(binascii.hexlify(content_file.to_bytes()).decode()) + ".app"
                 content_out = open(output_path.joinpath(content_file_name), "wb")
-                content_out.write(title.get_content_by_index(content_file))
+                content_out.write(title.get_content_by_index(content_file, skip_hash))
                 content_out.close()
 
         print("WAD file unpacked!")
