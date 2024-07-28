@@ -6,6 +6,7 @@ from importlib.metadata import version
 
 from modules.archive.ash import *
 from modules.archive.u8 import *
+from modules.title.emunand import *
 from modules.title.fakesign import *
 from modules.title.nus import *
 from modules.title.wad import *
@@ -15,7 +16,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(
         description="A simple command line tool to manage file formats used by the Wii.")
     parser.add_argument("--version", action="version",
-                        version=f"WiiPy v1.2.2, based on libWiiPy v{version('libWiiPy')} (from branch \'main\')")
+                        version=f"WiiPy v1.3.0, based on libWiiPy v{version('libWiiPy')} (from branch \'main\')")
     subparsers = parser.add_subparsers(title="subcommands", dest="subcommand", required=True)
 
     # Argument parser for the ASH subcommand.
@@ -31,6 +32,22 @@ if __name__ == "__main__":
                             help="number of bits in each symbol tree leaf (default: 9)", default=9)
     ash_parser.add_argument("--dist-bits", metavar="DIST_BITS", type=int,
                             help="number of bits in each distance tree leaf (default: 11)", default=11)
+
+    # Argument parser for the EmuNAND subcommand.
+    emunand_parser = subparsers.add_parser("emunand", help="handle Wii EmuNAND directories",
+                                           description="handle Wii EmuNAND directories")
+    emunand_subparsers = emunand_parser.add_subparsers(title="emunand", dest="emunand", required=True)
+    # Title EmuNAND subcommand.
+    emunand_title_parser = emunand_subparsers.add_parser("title", help="manage titles on an EmuNAND",
+                                                         description="manage titles on an EmuNAND")
+    emunand_title_parser.set_defaults(func=handle_emunand_title)
+    emunand_title_parser.add_argument("emunand", metavar="EMUNAND", type=str,
+                                      help="path to the target EmuNAND directory")
+    emunand_title_install_group = emunand_title_parser.add_mutually_exclusive_group(required=True)
+    emunand_title_install_group.add_argument("--install", metavar="WAD", type=str,
+                                             help="install the target WAD to an EmuNAND")
+    emunand_title_install_group.add_argument("--uninstall", metavar="TID", type=str,
+                                             help="uninstall a title with the provided Title ID from an EmuNAND")
 
     # Argument parser for the fakesign subcommand.
     fakesign_parser = subparsers.add_parser("fakesign", help="fakesign a TMD, Ticket, or WAD (trucha bug)",

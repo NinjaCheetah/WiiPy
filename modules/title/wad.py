@@ -3,7 +3,6 @@
 
 import os
 import pathlib
-import binascii
 import libWiiPy
 
 
@@ -90,9 +89,9 @@ def handle_wad(args):
             raise FileNotFoundError(input_path)
         # Check if the output path already exists, and if it does, ensure that it is both a directory and empty.
         if output_path.exists():
-            if output_path.is_dir() and next(os.scandir(output_path), None):
-                raise ValueError("Output folder is not empty!")
-            elif output_path.is_file():
+            # if output_path.is_dir() and next(os.scandir(output_path), None):
+            #    raise ValueError("Output folder is not empty!")
+            if output_path.is_file():
                 raise ValueError("A file already exists with the provided directory name!")
         else:
             os.mkdir(output_path)
@@ -129,7 +128,7 @@ def handle_wad(args):
                 skip_hash = False
 
             for content_file in range(0, title.tmd.num_contents):
-                content_file_name = "000000" + str(binascii.hexlify(content_file.to_bytes()).decode()) + ".app"
+                content_file_name = f"{content_file:08X}".lower() + ".app"
                 content_out = open(output_path.joinpath(content_file_name), "wb")
                 content_out.write(title.get_content_by_index(content_file, skip_hash))
                 content_out.close()
