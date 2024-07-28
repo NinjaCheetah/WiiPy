@@ -146,3 +146,5 @@ def handle_emunand_title(args):
         # On the off chance this title has a meta entry, delete that too.
         if meta_dir.joinpath(tid_upper).joinpath(tid_lower).joinpath("title.met").exists():
             shutil.rmtree(meta_dir.joinpath(tid_upper).joinpath(tid_lower))
+
+        print("Title uninstalled from EmuNAND!")
