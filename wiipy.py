@@ -8,6 +8,7 @@ from modules.archive.ash import *
 from modules.archive.u8 import *
 from modules.title.emunand import *
 from modules.title.fakesign import *
+from modules.title.iospatcher import *
 from modules.title.nus import *
 from modules.title.wad import *
 
@@ -34,8 +35,8 @@ if __name__ == "__main__":
                             help="number of bits in each distance tree leaf (default: 11)", default=11)
 
     # Argument parser for the EmuNAND subcommand.
-    emunand_parser = subparsers.add_parser("emunand", help="handle Wii EmuNAND directories",
-                                           description="handle Wii EmuNAND directories")
+    emunand_parser = subparsers.add_parser("emunand", help="manage Wii EmuNAND directories",
+                                           description="manage Wii EmuNAND directories")
     emunand_subparsers = emunand_parser.add_subparsers(title="emunand", dest="emunand", required=True)
     # Title EmuNAND subcommand.
     emunand_title_parser = emunand_subparsers.add_parser("title", help="manage titles on an EmuNAND",
@@ -55,6 +56,22 @@ if __name__ == "__main__":
     fakesign_parser.set_defaults(func=handle_fakesign)
     fakesign_parser.add_argument("input", metavar="IN", type=str, help="input file")
     fakesign_parser.add_argument("output", metavar="OUT", type=str, help="output file")
+
+    # Argument parser for the iospatch command.
+    iospatch_parser = subparsers.add_parser("iospatch", help="patch IOS WADs to re-enable exploits",
+                                            description="patch IOS WADs to re-enable exploits; by default, this will"
+                                                        "overwrite the input file in place unless you use -o/--output")
+    iospatch_parser.set_defaults(func=handle_iospatch)
+    iospatch_parser.add_argument("input", metavar="IN", type=str, help="input file")
+    iospatch_parser.add_argument("-o", "--output", metavar="OUT", type=str, help="output file (optional)")
+    iospatch_parser.add_argument("-fs", "--fakesigning", action="store_true", help="patch in fakesigning support")
+    iospatch_parser.add_argument("-ei", "--es-identify", action="store_true", help="patch in ES_Identify access")
+    iospatch_parser.add_argument("-na", "--nand-access", action="store_true", help="patch in /dev/flash access")
+    iospatch_parser.add_argument("-vp", "--version-patch", action="store_true", help="patch in the version patch?")
+    iospatch_parser.add_argument("-v", "--version", metavar="VERSION", type=int, help="set the IOS version")
+    iospatch_parser.add_argument("-s", "--slot", metavar="SLOT", type=int,
+                                 help="set the slot that this IOS will install to")
+    iospatch_parser.add_argument("-a", "--all", action="store_true", help="apply all patches (overrides other options)")
 
     # Argument parser for the NUS subcommand.
     nus_parser = subparsers.add_parser("nus", help="download data from the NUS",
