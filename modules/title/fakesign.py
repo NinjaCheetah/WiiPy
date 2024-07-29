@@ -7,7 +7,10 @@ import libWiiPy
 
 def handle_fakesign(args):
     input_path = pathlib.Path(args.input)
-    output_path = pathlib.Path(args.output)
+    if args.output is not None:
+        output_path = pathlib.Path(args.output)
+    else:
+        output_path = pathlib.Path(args.input)
 
     if not input_path.exists():
         raise FileNotFoundError(input_path)

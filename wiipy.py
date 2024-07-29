@@ -52,10 +52,11 @@ if __name__ == "__main__":
 
     # Argument parser for the fakesign subcommand.
     fakesign_parser = subparsers.add_parser("fakesign", help="fakesign a TMD, Ticket, or WAD (trucha bug)",
-                                            description="fakesign a TMD, Ticket, or WAD (trucha bug)")
+                                            description="fakesign a TMD, Ticket, or WAD (trucha bug); by default, this "
+                                                        "will overwrite the input file if no output file is specified")
     fakesign_parser.set_defaults(func=handle_fakesign)
     fakesign_parser.add_argument("input", metavar="IN", type=str, help="input file")
-    fakesign_parser.add_argument("output", metavar="OUT", type=str, help="output file")
+    fakesign_parser.add_argument("-o", "--output", metavar="OUT", type=str, help="output file (optional)")
 
     # Argument parser for the iospatch command.
     iospatch_parser = subparsers.add_parser("iospatch", help="patch IOS WADs to re-enable exploits",

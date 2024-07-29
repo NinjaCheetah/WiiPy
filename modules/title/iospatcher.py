@@ -93,6 +93,7 @@ def handle_iospatch(args):
                          " compatible with this IOS.")
 
     if patch_count > 0 or args.version is not None or args.slot is not None:
+        ios_patcher.title.fakesign()  # Signature is broken anyway, so fakesign for maximum installation openings
         if args.output is not None:
             output_path = pathlib.Path(args.output)
             output_file = open(output_path, "wb")
