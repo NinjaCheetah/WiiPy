@@ -67,7 +67,8 @@ if __name__ == "__main__":
     iospatch_parser.add_argument("-fs", "--fakesigning", action="store_true", help="patch in fakesigning support")
     iospatch_parser.add_argument("-ei", "--es-identify", action="store_true", help="patch in ES_Identify access")
     iospatch_parser.add_argument("-na", "--nand-access", action="store_true", help="patch in /dev/flash access")
-    iospatch_parser.add_argument("-vp", "--version-patch", action="store_true", help="patch in the version patch?")
+    iospatch_parser.add_argument("-vd", "--version-downgrading", action="store_true",
+                                 help="patch in version downgrading support")
     iospatch_parser.add_argument("-v", "--version", metavar="VERSION", type=int, help="set the IOS version")
     iospatch_parser.add_argument("-s", "--slot", metavar="SLOT", type=int,
                                  help="set the slot that this IOS will install to")

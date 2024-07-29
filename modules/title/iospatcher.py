@@ -5,6 +5,46 @@ import pathlib
 import libWiiPy
 
 
+def patch_fakesigning(ios_patcher: libWiiPy.title.IOSPatcher) -> int:
+    print("Applying fakesigning patch... ", end="", flush=True)
+    count = ios_patcher.patch_fakesigning()
+    if count == 1:
+        print(f"{count} patch applied")
+    else:
+        print(f"{count} patches applied")
+    return count
+
+
+def patch_es_identify(ios_patcher: libWiiPy.title.IOSPatcher) -> int:
+    print("Applying ES_Identify access patch... ", end="", flush=True)
+    count = ios_patcher.patch_es_identify()
+    if count == 1:
+        print(f"{count} patch applied")
+    else:
+        print(f"{count} patches applied")
+    return count
+
+
+def patch_nand_access(ios_patcher: libWiiPy.title.IOSPatcher) -> int:
+    print("Applying /dev/flash access patch... ", end="", flush=True)
+    count = ios_patcher.patch_nand_access()
+    if count == 1:
+        print(f"{count} patch applied")
+    else:
+        print(f"{count} patches applied")
+    return count
+
+
+def patch_version_downgrading(ios_patcher: libWiiPy.title.IOSPatcher) -> int:
+    print("Applying version downgrading patch... ", end="", flush=True)
+    count = ios_patcher.patch_version_downgrading()
+    if count == 1:
+        print(f"{count} patch applied")
+    else:
+        print(f"{count} patches applied")
+    return count
+
+
 def handle_iospatch(args):
     input_path = pathlib.Path(args.input)
     if not input_path.exists():
@@ -17,50 +57,50 @@ def handle_iospatch(args):
     if tid[:8] != "00000001" or tid[8:] == "00000001" or tid[8:] == "00000002":
         raise ValueError("This WAD does not appear to contain an IOS! Patching cannot continue.")
 
-    patches_applied = False
+    patch_count = 0
 
     if args.version is not None:
         title.set_title_version(args.version)
-        patches_applied = True
 
     if args.slot is not None:
         slot = args.slot
         if 3 <= slot <= 255:
             tid = title.tmd.title_id[:-2] + f"{slot:02X}"
             title.set_title_id(tid)
-        patches_applied = True
 
     ios_patcher = libWiiPy.title.IOSPatcher()
     ios_patcher.load(title)
 
     if args.all is True:
-        ios_patcher.patch_all()
-        patches_applied = True
+        patch_count += patch_fakesigning(ios_patcher)
+        patch_count += patch_es_identify(ios_patcher)
+        patch_count += patch_nand_access(ios_patcher)
+        patch_count += patch_version_downgrading(ios_patcher)
     else:
         if args.fakesigning is True:
-            ios_patcher.patch_fakesigning()
-            patches_applied = True
+            patch_count += patch_fakesigning(ios_patcher)
         if args.es_identify is True:
-            ios_patcher.patch_es_identify()
-            patches_applied = True
+            patch_count += patch_es_identify(ios_patcher)
         if args.nand_access is True:
-            ios_patcher.patch_nand_access()
-            patches_applied = True
-        if args.version_patch is True:
-            ios_patcher.patch_version_patch()
-            patches_applied = True
+            patch_count += patch_nand_access(ios_patcher)
+        if args.version_downgrading is True:
+            patch_count += patch_version_downgrading(ios_patcher)
 
-    if not patches_applied:
-        raise ValueError("No patches were selected! Please select patches to apply.")
+    print(f"\nTotal patches applied: {patch_count}")
 
-    if args.output is not None:
-        output_path = pathlib.Path(args.output)
-        output_file = open(output_path, "wb")
-        output_file.write(ios_patcher.title.dump_wad())
-        output_file.close()
-    else:
-        output_file = open(input_path, "wb")
-        output_file.write(ios_patcher.title.dump_wad())
-        output_file.close()
+    if patch_count == 0 and args.version is None and args.slot is None:
+        raise ValueError("No patches were applied! Please select patches to apply, and ensure that selected patches are"
+                         " compatible with this IOS.")
+
+    if patch_count > 0 or args.version is not None or args.slot is not None:
+        if args.output is not None:
+            output_path = pathlib.Path(args.output)
+            output_file = open(output_path, "wb")
+            output_file.write(ios_patcher.title.dump_wad())
+            output_file.close()
+        else:
+            output_file = open(input_path, "wb")
+            output_file.write(ios_patcher.title.dump_wad())
+            output_file.close()
 
     print("IOS successfully patched!")
