@@ -70,6 +70,8 @@ if __name__ == "__main__":
     iospatch_parser.add_argument("-na", "--nand-access", action="store_true", help="patch in /dev/flash access")
     iospatch_parser.add_argument("-vd", "--version-downgrading", action="store_true",
                                  help="patch in version downgrading support")
+    iospatch_parser.add_argument("-di", "--drive-inquiry", action="store_true",
+                                 help="patches out the drive inquiry check")
     iospatch_parser.add_argument("-v", "--version", metavar="VERSION", type=int, help="set the IOS version")
     iospatch_parser.add_argument("-s", "--slot", metavar="SLOT", type=int,
                                  help="set the slot that this IOS will install to")

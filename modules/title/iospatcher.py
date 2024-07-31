@@ -45,6 +45,16 @@ def patch_version_downgrading(ios_patcher: libWiiPy.title.IOSPatcher) -> int:
     return count
 
 
+def patch_drive_inquiry(ios_patcher: libWiiPy.title.IOSPatcher) -> int:
+    print("Applying drive inquiry patch... ", end="", flush=True)
+    count = ios_patcher.patch_drive_inquiry()
+    if count == 1:
+        print(f"{count} patch applied")
+    else:
+        print(f"{count} patches applied")
+    return count
+
+
 def handle_iospatch(args):
     input_path = pathlib.Path(args.input)
     if not input_path.exists():
@@ -85,6 +95,8 @@ def handle_iospatch(args):
             patch_count += patch_nand_access(ios_patcher)
         if args.version_downgrading is True:
             patch_count += patch_version_downgrading(ios_patcher)
+        if args.drive_inquiry is True:
+            patch_count += patch_drive_inquiry(ios_patcher)
 
     print(f"\nTotal patches applied: {patch_count}")
 
