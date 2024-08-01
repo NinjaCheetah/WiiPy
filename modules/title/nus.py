@@ -112,10 +112,7 @@ def handle_nus_title(args):
                 print(" - Decrypting content " + str(content + 1) + " of " + str(len(title.tmd.content_records)) +
                       " (Content ID: " + str(title.tmd.content_records[content].content_id) + ")...")
                 dec_content = title.get_content_by_index(content)
-                content_file_name = hex(title.tmd.content_records[content].content_id)[2:]
-                while len(content_file_name) < 8:
-                    content_file_name = "0" + content_file_name
-                content_file_name = content_file_name + ".app"
+                content_file_name = f"{title.tmd.content_records[content].content_id:08X}".lower() + ".app"
                 dec_content_out = open(output_dir.joinpath(content_file_name), "wb")
                 dec_content_out.write(dec_content)
                 dec_content_out.close()
@@ -159,9 +156,7 @@ def handle_nus_content(args):
 
     # Use the supplied output path if one was specified, otherwise generate one using the Content ID.
     if out is None:
-        content_file_name = hex(content_id)[2:]
-        while len(content_file_name) < 8:
-            content_file_name = "0" + content_file_name
+        content_file_name = f"{content_id:08X}".lower()
         output_path = pathlib.Path(content_file_name)
     else:
         output_path = pathlib.Path(out)
@@ -223,3 +218,37 @@ def handle_nus_content(args):
         file.close()
 
     print("Downloaded content with Content ID \"" + cid + "\"!")
+
+
+def handle_nus_tmd(args):
+    tid = args.tid
+    version = args.version
+    out = args.output
+
+    # Check if --version was passed, because it'll be None if it wasn't.
+    if args.version is not None:
+        try:
+            title_version = int(args.version)
+        except ValueError:
+            print("Enter a valid integer for the Title Version.")
+            return
+
+    # Use the supplied output path if one was specified, otherwise generate one using the Title ID.
+    if out is None:
+        output_path = pathlib.Path(tid + ".tmd")
+    else:
+        output_path = pathlib.Path(out)
+
+    # Try to download the TMD, and catch the ValueError libWiiPy will throw if it can't be found.
+    print("Downloading TMD for title " + tid + "...")
+    try:
+        tmd_data = libWiiPy.title.download_tmd(tid, version)
+    except ValueError:
+        print("The Title ID or version you specified could not be found!")
+        return
+
+    file = open(output_path, "wb")
+    file.write(tmd_data)
+    file.close()
+
+    print("Downloaded TMD for title \"" + tid + "\"!")

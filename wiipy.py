@@ -76,6 +76,8 @@ if __name__ == "__main__":
     iospatch_parser.add_argument("-s", "--slot", metavar="SLOT", type=int,
                                  help="set the slot that this IOS will install to")
     iospatch_parser.add_argument("-a", "--all", action="store_true", help="apply all patches (overrides other options)")
+    iospatch_parser.add_argument("-ns", "--no-shared", action="store_true",
+                                 help="set all patched content to be non-shared")
 
     # Argument parser for the NUS subcommand.
     nus_parser = subparsers.add_parser("nus", help="download data from the NUS",
@@ -108,6 +110,14 @@ if __name__ == "__main__":
     nus_content_parser.add_argument("-o", "--output", metavar="OUT", type=str,
                                     help="path to download the content to (optional)")
     nus_content_parser.add_argument("-d", "--decrypt", action="store_true", help="decrypt this content")
+    # TMD NUS subcommand.
+    nus_tmd_parser = nus_subparsers.add_parser("tmd", help="download a tmd from the NUS",
+                                               description="download a tmd from the NUS")
+    nus_tmd_parser.set_defaults(func=handle_nus_tmd)
+    nus_tmd_parser.add_argument("tid", metavar="TID", type=str, help="Title ID the TMD is for")
+    nus_tmd_parser.add_argument("-v", "--version", metavar="VERSION", type=int, help="version of the TMD to download")
+    nus_tmd_parser.add_argument("-o", "--output", metavar="OUT", type=str,
+                                help="path to download the TMD to (optional)")
 
     # Argument parser for the U8 subcommand.
     u8_parser = subparsers.add_parser("u8", help="pack/unpack a U8 archive",

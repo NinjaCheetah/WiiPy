@@ -105,6 +105,12 @@ def handle_iospatch(args):
                          " compatible with this IOS.")
 
     if patch_count > 0 or args.version is not None or args.slot is not None:
+        # Set patched content to non-shared if that argument was passed.
+        if args.no_shared is not None:
+            ios_patcher.title.content.content_records[ios_patcher.es_module_index].content_type = 1
+            if ios_patcher.dip_module_index != -1:
+                ios_patcher.title.content.content_records[ios_patcher.dip_module_index].content_type = 1
+
         ios_patcher.title.fakesign()  # Signature is broken anyway, so fakesign for maximum installation openings
         if args.output is not None:
             output_path = pathlib.Path(args.output)
