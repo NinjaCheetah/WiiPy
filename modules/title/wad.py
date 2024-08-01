@@ -53,6 +53,14 @@ def handle_wad(args):
         if not content_files:
             raise FileNotFoundError("No contents found! Cannot pack WAD.")
 
+        # Semi-hacky sorting method, but it works. Should maybe be changed eventually.
+        content_files_ordered = []
+        for index in range(len(content_files)):
+            content_files_ordered.append(None)
+        for content_file in content_files:
+            content_index = int(content_file.stem, 16)
+            content_files_ordered[content_index] = content_file
+
         # Open the output file, and load all the component files that we've now verified we have into a libWiiPy Title()
         # object.
         with open(output_path, "wb") as output_path:
@@ -72,7 +80,7 @@ def handle_wad(args):
             # Iterate over every file in the content_files list, and set them in the Title().
             for record in title.content.content_records:
                 index = title.content.content_records.index(record)
-                dec_content = open(content_files[index], "rb").read()
+                dec_content = open(content_files_ordered[index], "rb").read()
                 title.set_content(dec_content, index)
 
             # Fakesign the TMD and Ticket using the trucha bug, if enabled. This is built-in in libWiiPy v0.4.1+.
