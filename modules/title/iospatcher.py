@@ -106,7 +106,7 @@ def handle_iospatch(args):
 
     if patch_count > 0 or args.version is not None or args.slot is not None:
         # Set patched content to non-shared if that argument was passed.
-        if args.no_shared is not None:
+        if args.no_shared:
             ios_patcher.title.content.content_records[ios_patcher.es_module_index].content_type = 1
             if ios_patcher.dip_module_index != -1:
                 ios_patcher.title.content.content_records[ios_patcher.dip_module_index].content_type = 1
