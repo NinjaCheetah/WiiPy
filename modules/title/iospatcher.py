@@ -5,7 +5,7 @@ import pathlib
 import libWiiPy
 
 
-def patch_fakesigning(ios_patcher: libWiiPy.title.IOSPatcher) -> int:
+def _patch_fakesigning(ios_patcher: libWiiPy.title.IOSPatcher) -> int:
     print("Applying fakesigning patch... ", end="", flush=True)
     count = ios_patcher.patch_fakesigning()
     if count == 1:
@@ -15,7 +15,7 @@ def patch_fakesigning(ios_patcher: libWiiPy.title.IOSPatcher) -> int:
     return count
 
 
-def patch_es_identify(ios_patcher: libWiiPy.title.IOSPatcher) -> int:
+def _patch_es_identify(ios_patcher: libWiiPy.title.IOSPatcher) -> int:
     print("Applying ES_Identify access patch... ", end="", flush=True)
     count = ios_patcher.patch_es_identify()
     if count == 1:
@@ -25,7 +25,7 @@ def patch_es_identify(ios_patcher: libWiiPy.title.IOSPatcher) -> int:
     return count
 
 
-def patch_nand_access(ios_patcher: libWiiPy.title.IOSPatcher) -> int:
+def _patch_nand_access(ios_patcher: libWiiPy.title.IOSPatcher) -> int:
     print("Applying /dev/flash access patch... ", end="", flush=True)
     count = ios_patcher.patch_nand_access()
     if count == 1:
@@ -35,7 +35,7 @@ def patch_nand_access(ios_patcher: libWiiPy.title.IOSPatcher) -> int:
     return count
 
 
-def patch_version_downgrading(ios_patcher: libWiiPy.title.IOSPatcher) -> int:
+def _patch_version_downgrading(ios_patcher: libWiiPy.title.IOSPatcher) -> int:
     print("Applying version downgrading patch... ", end="", flush=True)
     count = ios_patcher.patch_version_downgrading()
     if count == 1:
@@ -45,7 +45,9 @@ def patch_version_downgrading(ios_patcher: libWiiPy.title.IOSPatcher) -> int:
     return count
 
 
-def patch_drive_inquiry(ios_patcher: libWiiPy.title.IOSPatcher) -> int:
+def _patch_drive_inquiry(ios_patcher: libWiiPy.title.IOSPatcher) -> int:
+    print("\n/!\\ WARNING! /!\\\n"
+          "This drive inquiry patch is experimental, and may introduce unexpected side effects on some consoles.\n")
     print("Applying drive inquiry patch... ", end="", flush=True)
     count = ios_patcher.patch_drive_inquiry()
     if count == 1:
@@ -82,21 +84,21 @@ def handle_iospatch(args):
     ios_patcher.load(title)
 
     if args.all is True:
-        patch_count += patch_fakesigning(ios_patcher)
-        patch_count += patch_es_identify(ios_patcher)
-        patch_count += patch_nand_access(ios_patcher)
-        patch_count += patch_version_downgrading(ios_patcher)
+        patch_count += _patch_fakesigning(ios_patcher)
+        patch_count += _patch_es_identify(ios_patcher)
+        patch_count += _patch_nand_access(ios_patcher)
+        patch_count += _patch_version_downgrading(ios_patcher)
     else:
         if args.fakesigning is True:
-            patch_count += patch_fakesigning(ios_patcher)
+            patch_count += _patch_fakesigning(ios_patcher)
         if args.es_identify is True:
-            patch_count += patch_es_identify(ios_patcher)
+            patch_count += _patch_es_identify(ios_patcher)
         if args.nand_access is True:
-            patch_count += patch_nand_access(ios_patcher)
+            patch_count += _patch_nand_access(ios_patcher)
         if args.version_downgrading is True:
-            patch_count += patch_version_downgrading(ios_patcher)
+            patch_count += _patch_version_downgrading(ios_patcher)
         if args.drive_inquiry is True:
-            patch_count += patch_drive_inquiry(ios_patcher)
+            patch_count += _patch_drive_inquiry(ios_patcher)
 
     print(f"\nTotal patches applied: {patch_count}")
 

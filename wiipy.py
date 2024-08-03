@@ -8,6 +8,7 @@ from modules.archive.ash import *
 from modules.archive.u8 import *
 from modules.title.emunand import *
 from modules.title.fakesign import *
+from modules.title.info import *
 from modules.title.iospatcher import *
 from modules.title.nus import *
 from modules.title.wad import *
@@ -57,6 +58,12 @@ if __name__ == "__main__":
     fakesign_parser.set_defaults(func=handle_fakesign)
     fakesign_parser.add_argument("input", metavar="IN", type=str, help="input file")
     fakesign_parser.add_argument("-o", "--output", metavar="OUT", type=str, help="output file (optional)")
+
+    # Argument parser for the info command.
+    info_parser = subparsers.add_parser("info", help="get information about a TMD, Ticket, or WAD",
+                                        description="get information about a TMD, Ticket, or WAD")
+    info_parser.set_defaults(func=handle_info)
+    info_parser.add_argument("input", metavar="IN", type=str, help="input file")
 
     # Argument parser for the iospatch command.
     iospatch_parser = subparsers.add_parser("iospatch", help="patch IOS WADs to re-enable exploits",

@@ -62,18 +62,20 @@ def handle_emunand_title(args):
         title_dir = title_dir.joinpath(tid_lower)
         if not title_dir.exists():
             title_dir.mkdir()
-        title_dir = title_dir.joinpath("content")
-        if not title_dir.exists():
-            title_dir.mkdir()
-        tmd_out = open(title_dir.joinpath("title.tmd"), "wb")
+        content_dir = title_dir.joinpath("content")
+        if not content_dir.exists():
+            content_dir.mkdir()
+        tmd_out = open(content_dir.joinpath("title.tmd"), "wb")
         tmd_out.write(title.wad.get_tmd_data())
         tmd_out.close()
         for content_file in range(0, title.tmd.num_contents):
             if title.tmd.content_records[content_file].content_type == 1:
                 content_file_name = f"{title.tmd.content_records[content_file].content_id:08X}".lower()
-                content_out = open(title_dir.joinpath(content_file_name + ".app"), "wb")
+                content_out = open(content_dir.joinpath(content_file_name + ".app"), "wb")
                 content_out.write(title.get_content_by_index(content_file))
                 content_out.close()
+        if not title_dir.joinpath("data").exists():
+            title_dir.joinpath("data").mkdir()  # Empty directory used for save data for the title.
 
         # Shared contents need to be installed to /shared1/, with incremental names determined by /shared1/content.map.
         content_map_path = shared_dir.joinpath("content.map")
