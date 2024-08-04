@@ -73,12 +73,14 @@ def handle_iospatch(args):
 
     if args.version is not None:
         title.set_title_version(args.version)
+        print(f"Title version set to {args.version}!")
 
     if args.slot is not None:
         slot = args.slot
         if 3 <= slot <= 255:
             tid = title.tmd.title_id[:-2] + f"{slot:02X}"
             title.set_title_id(tid)
+            print(f"IOS slot set to {slot}!")
 
     ios_patcher = libWiiPy.title.IOSPatcher()
     ios_patcher.load(title)

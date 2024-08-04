@@ -32,7 +32,7 @@ class _EmuNANDStructure:
         self.wfs_dir.mkdir(exist_ok=True)
 
 
-def _do_wad_install(emunand_struct: _EmuNANDStructure, title: libWiiPy.title.Title):
+def _do_wad_install(emunand_struct: _EmuNANDStructure, title: libWiiPy.title.Title, skip_hash=False):
     # Save the upper and lower portions of the Title ID, because these are used as target install directories.
     tid_upper = title.tmd.title_id[:8]
     tid_lower = title.tmd.title_id[8:]
@@ -56,7 +56,8 @@ def _do_wad_install(emunand_struct: _EmuNANDStructure, title: libWiiPy.title.Tit
     for content_file in range(0, title.tmd.num_contents):
         if title.tmd.content_records[content_file].content_type == 1:
             content_file_name = f"{title.tmd.content_records[content_file].content_id:08X}".lower()
-            open(content_dir.joinpath(content_file_name + ".app"), "wb").write(title.get_content_by_index(content_file))
+            open(content_dir.joinpath(content_file_name + ".app"), "wb").write(
+                title.get_content_by_index(content_file, skip_hash=skip_hash))
     title_dir.joinpath("data").mkdir(exist_ok=True)  # Empty directory used for save data for the title.
 
     # Shared contents need to be installed to /shared1/, with incremental names determined by /shared1/content.map.
@@ -72,7 +73,7 @@ def _do_wad_install(emunand_struct: _EmuNANDStructure, title: libWiiPy.title.Tit
             if title.tmd.content_records[content_file].content_hash not in existing_hashes:
                 content_file_name = content_map.add_content(title.tmd.content_records[content_file].content_hash)
                 open(emunand_struct.shared1_dir.joinpath(content_file_name + ".app"), "wb").write(
-                    title.get_content_by_index(content_file))
+                    title.get_content_by_index(content_file, skip_hash=skip_hash))
     open(emunand_struct.shared1_dir.joinpath("content.map"), "wb").write(content_map.dump())
 
     # The "footer" or meta file is installed as title.met in /meta/<tid_upper>/<tid_lower>/. Only write this if meta
@@ -104,6 +105,10 @@ def _do_wad_install(emunand_struct: _EmuNANDStructure, title: libWiiPy.title.Tit
 
 def handle_emunand_title(args):
     emunand_path = pathlib.Path(args.emunand)
+    if args.skip_hash:
+        skip_hash = True
+    else:
+        skip_hash = False
 
     # Code for if the --install argument was passed.
     if args.install:
@@ -128,13 +133,13 @@ def handle_emunand_title(args):
             for wad in wad_files:
                 title = libWiiPy.title.Title()
                 title.load_wad(open(wad, "rb").read())
-                _do_wad_install(emunand_struct, title)
+                _do_wad_install(emunand_struct, title, skip_hash)
                 wad_count += 1
             print(f"Successfully installed {wad_count} WAD(s) to EmuNAND!")
         else:
             title = libWiiPy.title.Title()
             title.load_wad(open(input_path, "rb").read())
-            _do_wad_install(emunand_struct, title)
+            _do_wad_install(emunand_struct, title, skip_hash)
             print("Successfully installed WAD to EmuNAND!")
 
     # Code for if the --uninstall argument was passed.

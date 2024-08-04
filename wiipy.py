@@ -52,6 +52,8 @@ if __name__ == "__main__":
     emunand_title_install_group.add_argument("--uninstall", metavar="TID", type=str,
                                              help="uninstall a title with the provided Title ID from an EmuNAND (also"
                                                   "accepts a WAD file to read the TID from)")
+    emunand_title_parser.add_argument("-s", "--skip-hash", help="skips validating the hashes of decrypted "
+                                      "content (install only)", action="store_true")
 
     # Argument parser for the fakesign subcommand.
     fakesign_parser = subparsers.add_parser("fakesign", help="fakesign a TMD, Ticket, or WAD (trucha bug)",
