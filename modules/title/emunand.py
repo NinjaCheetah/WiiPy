@@ -143,7 +143,7 @@ def handle_emunand_title(args):
         if pathlib.Path(input_str).exists():
             title = libWiiPy.title.Title()
             title.load_wad(open(pathlib.Path(input_str), "rb").read())
-            target_tid = title.tmd
+            target_tid = title.tmd.title_id
         else:
             target_tid = args.install
 
