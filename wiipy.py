@@ -47,7 +47,8 @@ if __name__ == "__main__":
                                       help="path to the target EmuNAND directory")
     emunand_title_install_group = emunand_title_parser.add_mutually_exclusive_group(required=True)
     emunand_title_install_group.add_argument("--install", metavar="WAD", type=str,
-                                             help="install the target WAD to an EmuNAND")
+                                             help="install the target WAD(s) to an EmuNAND (can be a single file or a "
+                                                  "folder of WADs)")
     emunand_title_install_group.add_argument("--uninstall", metavar="TID", type=str,
                                              help="uninstall a title with the provided Title ID from an EmuNAND")
 

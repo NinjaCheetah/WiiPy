@@ -7,15 +7,128 @@ import shutil
 import libWiiPy
 
 
+class _EmuNANDStructure:
+    def __init__(self, emunand_root):
+        self.emunand_root: pathlib.Path = emunand_root
+
+        self.import_dir = self.emunand_root.joinpath("import")
+        self.meta_dir = self.emunand_root.joinpath("meta")
+        self.shared1_dir = self.emunand_root.joinpath("shared1")
+        self.shared2_dir = self.emunand_root.joinpath("shared2")
+        self.sys_dir = self.emunand_root.joinpath("sys")
+        self.ticket_dir = self.emunand_root.joinpath("ticket")
+        self.title_dir = self.emunand_root.joinpath("title")
+        self.tmp_dir = self.emunand_root.joinpath("tmp")
+        self.wfs_dir = self.emunand_root.joinpath("wfs")
+
+        self.import_dir.mkdir(exist_ok=True)
+        self.meta_dir.mkdir(exist_ok=True)
+        self.shared1_dir.mkdir(exist_ok=True)
+        self.shared2_dir.mkdir(exist_ok=True)
+        self.sys_dir.mkdir(exist_ok=True)
+        self.ticket_dir.mkdir(exist_ok=True)
+        self.title_dir.mkdir(exist_ok=True)
+        self.tmp_dir.mkdir(exist_ok=True)
+        self.wfs_dir.mkdir(exist_ok=True)
+
+
+def _do_wad_install(emunand_struct: _EmuNANDStructure, title: libWiiPy.title.Title):
+    # Save the upper and lower portions of the Title ID, because these are used as target install directories.
+    tid_upper = title.tmd.title_id[:8]
+    tid_lower = title.tmd.title_id[8:]
+
+    # Tickets are installed as <tid_lower>.tik in /ticket/<tid_upper>/
+    ticket_dir = emunand_struct.ticket_dir.joinpath(tid_upper)
+    if not ticket_dir.exists():
+        ticket_dir.mkdir()
+    ticket_out = open(ticket_dir.joinpath(tid_lower + ".tik"), "wb")
+    ticket_out.write(title.wad.get_ticket_data())
+    ticket_out.close()
+
+    # The TMD and normal contents are installed to /title/<tid_upper>/<tid_lower>/content/, with the tmd being named
+    # title.tmd and the contents being named <cid>.app.
+    title_dir = emunand_struct.title_dir.joinpath(tid_upper)
+    if not title_dir.exists():
+        title_dir.mkdir()
+    title_dir = title_dir.joinpath(tid_lower)
+    if not title_dir.exists():
+        title_dir.mkdir()
+    content_dir = title_dir.joinpath("content")
+    if not content_dir.exists():
+        content_dir.mkdir()
+    tmd_out = open(content_dir.joinpath("title.tmd"), "wb")
+    tmd_out.write(title.wad.get_tmd_data())
+    tmd_out.close()
+    for content_file in range(0, title.tmd.num_contents):
+        if title.tmd.content_records[content_file].content_type == 1:
+            content_file_name = f"{title.tmd.content_records[content_file].content_id:08X}".lower()
+            content_out = open(content_dir.joinpath(content_file_name + ".app"), "wb")
+            content_out.write(title.get_content_by_index(content_file))
+            content_out.close()
+    if not title_dir.joinpath("data").exists():
+        title_dir.joinpath("data").mkdir()  # Empty directory used for save data for the title.
+
+    # Shared contents need to be installed to /shared1/, with incremental names determined by /shared1/content.map.
+    content_map_path = emunand_struct.shared1_dir.joinpath("content.map")
+    content_map = libWiiPy.title.SharedContentMap()
+    existing_hashes = []
+    if content_map_path.exists():
+        content_map.load(open(content_map_path, "rb").read())
+        for record in content_map.shared_records:
+            existing_hashes.append(record.content_hash)
+    for content_file in range(0, title.tmd.num_contents):
+        if title.tmd.content_records[content_file].content_type == 32769:
+            if title.tmd.content_records[content_file].content_hash not in existing_hashes:
+                content_file_name = content_map.add_content(title.tmd.content_records[content_file].content_hash)
+                content_out = open(emunand_struct.shared1_dir.joinpath(content_file_name + ".app"), "wb")
+                content_out.write(title.get_content_by_index(content_file))
+                content_out.close()
+    content_map_out = open(emunand_struct.shared1_dir.joinpath("content.map"), "wb")
+    content_map_out.write(content_map.dump())
+    content_map_out.close()
+
+    # The "footer" or meta file is installed as title.met in /meta/<tid_upper>/<tid_lower>/. Only write this if meta
+    # is not nothing.
+    meta_data = title.wad.get_meta_data()
+    if meta_data != b'':
+        meta_dir = emunand_struct.meta_dir.joinpath(tid_upper)
+        if not meta_dir.exists():
+            meta_dir.mkdir()
+        meta_dir = meta_dir.joinpath(tid_lower)
+        if not meta_dir.exists():
+            meta_dir.mkdir()
+        meta_out = open(meta_dir.joinpath("title.met"), "wb")
+        meta_out.write(title.wad.get_meta_data())
+        meta_out.close()
+
+    # The Title ID needs to be added to uid.sys, which is essentially a log of all titles that are installed or have
+    # ever been installed.
+    uid_sys_path = emunand_struct.sys_dir.joinpath("uid.sys")
+    uid_sys = libWiiPy.title.UidSys()
+    existing_tids = []
+    if uid_sys_path.exists():
+        uid_sys.load(open(uid_sys_path, "rb").read())
+        for entry in uid_sys.uid_entries:
+            existing_tids.append(entry.title_id)
+    else:
+        uid_sys.create()
+        existing_tids.append(uid_sys.uid_entries[0].title_id)
+    if title.tmd.title_id not in existing_tids:
+        uid_sys.add(title.tmd.title_id)
+    uid_sys_out = open(uid_sys_path, "wb")
+    uid_sys_out.write(uid_sys.dump())
+    uid_sys_out.close()
+
+
 def handle_emunand_title(args):
     emunand_path = pathlib.Path(args.emunand)
 
     # Code for if the --install argument was passed.
     if args.install:
-        wad_path = pathlib.Path(args.install)
+        input_path = pathlib.Path(args.install)
 
-        if not wad_path.exists():
-            raise FileNotFoundError(wad_path)
+        if not input_path.exists():
+            raise FileNotFoundError(input_path)
         # Check if the EmuNAND path already exists, and ensure that it is a directory if it does.
         if emunand_path.exists():
             if emunand_path.is_file():
@@ -23,94 +136,26 @@ def handle_emunand_title(args):
         else:
             emunand_path.mkdir()
 
-        # Check for required EmuNAND directories, and create them if they don't exist.
-        ticket_dir = emunand_path.joinpath("ticket")
-        title_dir = emunand_path.joinpath("title")
-        shared_dir = emunand_path.joinpath("shared1")
-        meta_dir = emunand_path.joinpath("meta")
+        emunand_struct = _EmuNANDStructure(emunand_path)
 
-        if not ticket_dir.exists():
-            ticket_dir.mkdir()
-        if not title_dir.exists():
-            title_dir.mkdir()
-        if not shared_dir.exists():
-            shared_dir.mkdir()
-        if not meta_dir.exists():
-            meta_dir.mkdir()
-
-        wad_file = open(wad_path, "rb").read()
-        title = libWiiPy.title.Title()
-        title.load_wad(wad_file)
-
-        # Save the upper and lower portions of the Title ID, because these are used as target install directories.
-        tid_upper = title.tmd.title_id[:8]
-        tid_lower = title.tmd.title_id[8:]
-
-        # Tickets are installed as <tid_lower>.tik in /ticket/<tid_upper>/
-        ticket_dir = ticket_dir.joinpath(tid_upper)
-        if not ticket_dir.exists():
-            ticket_dir.mkdir()
-        ticket_out = open(ticket_dir.joinpath(tid_lower + ".tik"), "wb")
-        ticket_out.write(title.wad.get_ticket_data())
-        ticket_out.close()
-
-        # The TMD and normal contents are installed to /title/<tid_upper>/<tid_lower>/content/, with the tmd being named
-        # title.tmd and the contents being named <cid>.app.
-        title_dir = title_dir.joinpath(tid_upper)
-        if not title_dir.exists():
-            title_dir.mkdir()
-        title_dir = title_dir.joinpath(tid_lower)
-        if not title_dir.exists():
-            title_dir.mkdir()
-        content_dir = title_dir.joinpath("content")
-        if not content_dir.exists():
-            content_dir.mkdir()
-        tmd_out = open(content_dir.joinpath("title.tmd"), "wb")
-        tmd_out.write(title.wad.get_tmd_data())
-        tmd_out.close()
-        for content_file in range(0, title.tmd.num_contents):
-            if title.tmd.content_records[content_file].content_type == 1:
-                content_file_name = f"{title.tmd.content_records[content_file].content_id:08X}".lower()
-                content_out = open(content_dir.joinpath(content_file_name + ".app"), "wb")
-                content_out.write(title.get_content_by_index(content_file))
-                content_out.close()
-        if not title_dir.joinpath("data").exists():
-            title_dir.joinpath("data").mkdir()  # Empty directory used for save data for the title.
-
-        # Shared contents need to be installed to /shared1/, with incremental names determined by /shared1/content.map.
-        content_map_path = shared_dir.joinpath("content.map")
-        content_map = libWiiPy.title.SharedContentMap()
-        existing_hashes = []
-        if content_map_path.exists():
-            content_map.load(open(content_map_path, "rb").read())
-            for record in content_map.shared_records:
-                existing_hashes.append(record.content_hash)
-        for content_file in range(0, title.tmd.num_contents):
-            if title.tmd.content_records[content_file].content_type == 32769:
-                if title.tmd.content_records[content_file].content_hash not in existing_hashes:
-                    content_file_name = content_map.add_content(title.tmd.content_records[content_file].content_hash)
-                    content_out = open(shared_dir.joinpath(content_file_name + ".app"), "wb")
-                    content_out.write(title.get_content_by_index(content_file))
-                    content_out.close()
-        content_map_out = open(shared_dir.joinpath("content.map"), "wb")
-        content_map_out.write(content_map.dump())
-        content_map_out.close()
-
-        # The "footer" or meta file is installed as title.met in /meta/<tid_upper>/<tid_lower>/. Only write this if meta
-        # is not nothing.
-        meta_data = title.wad.get_meta_data()
-        if meta_data != b'':
-            meta_dir = meta_dir.joinpath(tid_upper)
-            if not meta_dir.exists():
-                meta_dir.mkdir()
-            meta_dir = meta_dir.joinpath(tid_lower)
-            if not meta_dir.exists():
-                meta_dir.mkdir()
-            meta_out = open(meta_dir.joinpath("title.met"), "wb")
-            meta_out.write(title.wad.get_meta_data())
-            meta_out.close()
-
-        print("Title successfully installed to EmuNAND!")
+        if input_path.is_dir():
+            wad_files = list(input_path.glob("*.[wW][aA][dD]"))
+            if not wad_files:
+                raise FileNotFoundError("No WAD files were found in the provided input directory!")
+            wad_count = 0
+            for wad in wad_files:
+                wad_file = open(wad, "rb").read()
+                title = libWiiPy.title.Title()
+                title.load_wad(wad_file)
+                _do_wad_install(emunand_struct, title)
+                wad_count += 1
+            print(f"Successfully installed {wad_count} WAD(s) to EmuNAND!")
+        else:
+            wad_file = open(input_path, "rb").read()
+            title = libWiiPy.title.Title()
+            title.load_wad(wad_file)
+            _do_wad_install(emunand_struct, title)
+            print("Successfully installed WAD to EmuNAND!")
 
     # Code for if the --uninstall argument was passed.
     elif args.uninstall:
