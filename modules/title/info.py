@@ -71,7 +71,7 @@ def _print_ticket_info(ticket: libWiiPy.title.Ticket):
             key = "Common"
         case 1:
             key = "Korean"
-        case 3:
+        case 2:
             key = "vWii"
         case _:
             key = "Unknown (Likely Common)"

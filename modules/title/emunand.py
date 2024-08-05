@@ -133,8 +133,11 @@ def handle_emunand_title(args):
             for wad in wad_files:
                 title = libWiiPy.title.Title()
                 title.load_wad(open(wad, "rb").read())
-                _do_wad_install(emunand_struct, title, skip_hash)
-                wad_count += 1
+                try:
+                    _do_wad_install(emunand_struct, title, skip_hash)
+                    wad_count += 1
+                except ValueError:
+                    print(f"WAD {wad} could not be installed!")
             print(f"Successfully installed {wad_count} WAD(s) to EmuNAND!")
         else:
             title = libWiiPy.title.Title()
