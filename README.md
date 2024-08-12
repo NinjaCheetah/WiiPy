@@ -7,7 +7,7 @@ To see what features are supported, I would recommend checking out the list of f
 
 
 ## Requirements
-libWiiPy has been tested on both Python 3.11 and 3.12, and works as expected in both places. libWiiPy *should* support Python 3.10, however this is not verified. WiiPy only relies on libWiiPy, so it supports the same Python versions.
+libWiiPy has been tested on both Python 3.11 and 3.12, and works as expected in both places. WiiPy relies only on libWiiPy, so generally any version supported by libWiiPy should be supported by WiiPy.
 
 To make sure you have libWiiPy and all of its dependencies, you can simply run:
 ```shell
@@ -20,7 +20,7 @@ Basic usage for WiiPy is very simple.
 ```shell
 python3 wiipy.py <subcommand>
 ```
-You can use `--help` to see a list of all subcommands, or use `<subcommand> --help` to see usage instructions for that subcommand.
+You can use `--help` to see a list of all commands, or use `<command> --help` to see usage instructions for that command. This also applies to subcommands, with the syntax `<command> <subcommand> --help`.
 
 Available subcommands will expand as support for more features are added into libWiiPy. WiiPy is designed around libWiiPy's `main` branch, so any features that have been merged into main are likely to be supported here within a short period of time. This also means that any updates to the library will be addressed here quickly, so breaking changes in libWiiPy shouldn't cause issues.
 
@@ -44,3 +44,6 @@ Then, run the install command with `sudo` (or your favorite alternative):
 ```shell
 sudo make linux-install
 ```
+
+### A Note About Scripts
+WiiPy's source includes a directory named `scripts`, which is currently where miscellaneous libWiiPy-based scripts live. Note that they are not part of WiiPy releases, and are not tested the same way the WiiPy is. They are simply here for those who may find them useful.
