@@ -21,15 +21,17 @@ def _print_tmd_info(tmd: libWiiPy.title.TMD):
         print(f"  IOS Version: N/A")
     else:
         print(f"  Required IOS: IOS{int(tmd.ios_tid[-2:], 16)} ({tmd.ios_tid})")
-    if tmd.issuer.decode().find("CP00000004") != 1:
+    if tmd.signature_issuer.find("CP00000004") != -1:
         print(f"  Certificate: CP00000004 (Retail)")
-        print(f"  Certificate Issuer: Root-CA00000001")
-    elif tmd.issuer.decode().find("CP00000007") != 1:
+        print(f"  Certificate Issuer: Root-CA00000001 (Retail)")
+    elif tmd.signature_issuer.find("CP00000007") != -1:
         print(f"  Certificate: CP00000007 (Development)")
-        print(f"  Certificate Issuer: Root-CA00000002")
-    elif tmd.issuer.decode().find("CP10000000") != 1:
+        print(f"  Certificate Issuer: Root-CA00000002 (Development)")
+    elif tmd.signature_issuer.find("CP10000000") != -1:
         print(f"  Certificate: CP10000000 (Arcade)")
-        print(f"  Certificate Issuer: Root-CA10000000")
+        print(f"  Certificate Issuer: Root-CA10000000 (Arcade)")
+    else:
+        print(f"  Certificate Info: {tmd.signature_issuer} (Unknown)")
     print(f"  Region: {tmd.get_title_region()}")
     print(f"  Title Type: {tmd.get_title_type()}")
     print(f"  vWii Title: {bool(tmd.vwii)}")
@@ -58,14 +60,14 @@ def _print_ticket_info(ticket: libWiiPy.title.Ticket):
     else:
         print(f"  Title Version: {ticket.title_version}")
     print(f"  Ticket Version: {ticket.ticket_version}")
-    if ticket.signature_issuer.find("XS00000003") != 1:
+    if ticket.signature_issuer.find("XS00000003") != -1:
         print(f"  Certificate: XS00000003 (Retail)")
-        print(f"  Certificate Issuer: Root-CA00000001")
-    elif ticket.signature_issuer.find("XS00000006") != 1:
+        print(f"  Certificate Issuer: Root-CA00000001 (Retail)")
+    elif ticket.signature_issuer.find("XS00000006") != -1:
         print(f"  Certificate: XS00000006 (Development)")
-        print(f"  Certificate Issuer: Root-CA00000002")
+        print(f"  Certificate Issuer: Root-CA00000002 (Development)")
     else:
-        print(f"  Certificate Info: {ticket.signature_issuer}")
+        print(f"  Certificate Info: {ticket.signature_issuer} (Unknown)")
     match ticket.common_key_index:
         case 0:
             key = "Common"

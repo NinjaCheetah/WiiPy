@@ -6,7 +6,7 @@ import libWiiPy
 
 
 def handle_emunand_title(args):
-    emunand = libWiiPy.title.EmuNAND(args.emunand)
+    emunand = libWiiPy.nand.EmuNAND(args.emunand)
     if args.skip_hash:
         skip_hash = True
     else:
