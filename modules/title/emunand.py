@@ -47,7 +47,7 @@ def handle_emunand_title(args):
             title.load_wad(open(pathlib.Path(input_str), "rb").read())
             target_tid = title.tmd.title_id
         else:
-            target_tid = args.install
+            target_tid = input_str
 
         if len(target_tid) != 16:
             raise ValueError("Invalid Title ID! Title IDs must be 16 characters long.")
