@@ -164,7 +164,7 @@ cython_debug/
 #  option (not recommended) you can uncomment the following to ignore the entire idea folder.
 .idea/
 
-# Allows me to keep TMD files in my repository folder for testing without accidentally publishing them
+# Allows me to keep Wii files in my repository folder for testing without accidentally publishing them
 *.tmd
 *.tik
 *.cert
@@ -173,8 +173,12 @@ cython_debug/
 *.app
 *.arc
 *.ash
+*.met
 out_prod/
 remakewad.pl
+content.map
+uid.sys
+SYSCONF
 
 # Also awful macOS files
 *._*

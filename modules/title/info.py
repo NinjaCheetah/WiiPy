@@ -18,7 +18,7 @@ def _print_tmd_info(tmd: libWiiPy.title.TMD):
     print(f"  TMD Version: {tmd.tmd_version}")
     # IOSes just have an all-zero TID, so don't bothering showing that.
     if tmd.ios_tid == "0000000000000000":
-        print(f"  IOS Version: N/A")
+        print(f"  Required IOS: N/A")
     else:
         print(f"  Required IOS: IOS{int(tmd.ios_tid[-2:], 16)} ({tmd.ios_tid})")
     if tmd.signature_issuer.find("CP00000004") != -1:
@@ -32,7 +32,23 @@ def _print_tmd_info(tmd: libWiiPy.title.TMD):
         print(f"  Certificate Issuer: Root-CA10000000 (Arcade)")
     else:
         print(f"  Certificate Info: {tmd.signature_issuer} (Unknown)")
-    print(f"  Region: {tmd.get_title_region()}")
+    if tmd.title_id == "0000000100000002":
+        match tmd.title_version_converted[-1:]:
+            case "U":
+                region = "USA"
+            case "E":
+                region = "EUR"
+            case "J":
+                region = "JPN"
+            case "K":
+                region = "KOR"
+            case _:
+                region = "None"
+    elif tmd.title_id[:8] == "00000001":
+        region = "None"
+    else:
+        region = tmd.get_title_region()
+    print(f"  Region: {region}")
     print(f"  Title Type: {tmd.get_title_type()}")
     print(f"  vWii Title: {bool(tmd.vwii)}")
     print(f"  DVD Video Access: {tmd.get_access_right(tmd.AccessFlags.DVD_VIDEO)}")
@@ -40,13 +56,15 @@ def _print_tmd_info(tmd: libWiiPy.title.TMD):
     print(f"  Fakesigned: {tmd.get_is_fakesigned()}")
     # Iterate over the content and print their details.
     print("\nContent Info")
-    print(f"Total Contents: {tmd.num_contents}")
+    print(f"  Total Contents: {tmd.num_contents}")
+    print(f"  Boot Content Index: {tmd.boot_index}")
+    print("  Content Records:")
     for content in tmd.content_records:
-        print(f"  Content Index: {content.index}")
-        print(f"    Content ID: " + f"{content.content_id:08X}".lower())
-        print(f"    Content Type: {tmd.get_content_type(content.index)}")
-        print(f"    Content Size: {content.content_size} bytes")
-        print(f"    Content Hash: {content.content_hash.decode()}")
+        print(f"    Content Index: {content.index}")
+        print(f"      Content ID: " + f"{content.content_id:08X}".lower())
+        print(f"      Content Type: {tmd.get_content_type(content.index)}")
+        print(f"      Content Size: {content.content_size} bytes")
+        print(f"      Content Hash: {content.content_hash.decode()}")
 
 
 def _print_ticket_info(ticket: libWiiPy.title.Ticket):
@@ -91,6 +109,18 @@ def _print_wad_info(title: libWiiPy.title.Title):
             print(f"  WAD Type: boot2")
         case _:
             print(f"  WAD Type: Unknown ({title.wad.wad_type})")
+    min_size_blocks = title.get_title_size_blocks()
+    max_size_blocks = title.get_title_size_blocks(absolute=True)
+    if min_size_blocks == max_size_blocks:
+        print(f"  Installed Size: {min_size_blocks} blocks")
+    else:
+        print(f"  Installed Size: {min_size_blocks}-{max_size_blocks} blocks")
+    min_size = round(title.get_title_size() / 1048576, 2)
+    max_size = round(title.get_title_size(absolute=True) / 1048576, 2)
+    if min_size == max_size:
+        print(f"  Installed Size (MB): {min_size} MB")
+    else:
+        print(f"  Installed Size (MB): {min_size}-{max_size} MB")
     print(f"  Has Meta/Footer: {bool(title.wad.wad_meta_size)}")
     print(f"  Has CRL: {bool(title.wad.wad_crl_size)}")
     print("")
