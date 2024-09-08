@@ -143,18 +143,39 @@ if __name__ == "__main__":
     # Argument parser for the WAD subcommand.
     wad_parser = subparsers.add_parser("wad", help="pack/unpack a WAD file",
                                        description="pack/unpack a WAD file")
-    wad_parser.set_defaults(func=handle_wad)
-    wad_group = wad_parser.add_mutually_exclusive_group(required=True)
-    wad_group.add_argument("-p", "--pack", help="pack a directory to a WAD file", action="store_true")
-    wad_group.add_argument("-u", "--unpack", help="unpack a WAD file to a directory", action="store_true")
-    wad_parser.add_argument("input", metavar="IN", type=str, help="input file")
-    wad_parser.add_argument("output", metavar="OUT", type=str, help="output file")
-    wad_pack_group = wad_parser.add_argument_group(title="packing options")
-    wad_pack_group.add_argument("-f", "--fakesign", help="fakesign the TMD and Ticket (trucha bug)",
-                                action="store_true")
-    wad_unpack_group = wad_parser.add_argument_group(title="unpacking options")
-    wad_unpack_group.add_argument("-s", "--skip-hash", help="skips validating the hashes of decrypted "
-                                  "content", action="store_true")
+    wad_subparsers = wad_parser.add_subparsers(dest="subcommand", required=True)
+    # Add WAD subcommand.
+    wad_add_parser = wad_subparsers.add_parser("add", help="add decrypted content to a WAD file",
+                                               description="add decrypted content to a WAD file; by default, this "
+                                                        "will overwrite the input file unless an output is specified")
+    wad_add_parser.set_defaults(func=handle_wad_add)
+    wad_add_parser.add_argument("input", metavar="IN", type=str, help="WAD file to add to")
+    wad_add_parser.add_argument("content", metavar="CONTENT", type=str, help="decrypted content to add")
+    wad_add_parser.add_argument("-c", "--cid", metavar="CID", type=str,
+                                help="content ID to assign the new content (optional, will be randomly assigned if "
+                                     "not specified)")
+    wad_add_parser.add_argument("-t", "--type", metavar="TYPE", type=str,
+                                help="the type of the new content, can be \"Normal\", \"Shared\", or \"DLC\" "
+                                     "(optional, will default to \"Normal\" if not specified)")
+    wad_add_parser.add_argument("-o", "--output", metavar="OUT", type=str,
+                                help="file to output the new WAD to (optional)")
+    # Pack WAD subcommand.
+    wad_pack_parser = wad_subparsers.add_parser("pack", help="pack a directory to a WAD file",
+                                                 description="pack a directory to a WAD file")
+    wad_pack_parser.set_defaults(func=handle_wad_pack)
+    wad_pack_parser.add_argument("input", metavar="IN", type=str, help="input directory")
+    wad_pack_parser.add_argument("output", metavar="OUT", type=str, help="WAD file to pack")
+    wad_pack_parser.add_argument("-f", "--fakesign", help="fakesign the TMD and Ticket (trucha bug)",
+                                 action="store_true")
+    # Unpack WAD subcommand.
+    wad_unpack_parser = wad_subparsers.add_parser("unpack", help="unpack a WAD file to a directory",
+                                                  description="unpack a WAD file to a directory")
+    wad_unpack_parser.set_defaults(func=handle_wad_unpack)
+    wad_unpack_parser.add_argument("input", metavar="IN", type=str, help="WAD file to unpack")
+    wad_unpack_parser.add_argument("output", metavar="OUT", type=str, help="output directory")
+    wad_unpack_parser.add_argument("-s", "--skip-hash", help="skips validating the hashes of decrypted "
+                                   "content", action="store_true")
+
 
     # Parse all the args, and call the appropriate function with all of those args if a valid subcommand was passed.
     args = parser.parse_args()
