@@ -152,13 +152,13 @@ if __name__ == "__main__":
     wad_add_parser.add_argument("input", metavar="IN", type=str, help="WAD file to add to")
     wad_add_parser.add_argument("content", metavar="CONTENT", type=str, help="decrypted content to add")
     wad_add_parser.add_argument("-c", "--cid", metavar="CID", type=str,
-                                help="content ID to assign the new content (optional, will be randomly assigned if "
+                                help="Content ID to assign the new content (optional, will be randomly assigned if "
                                      "not specified)")
     wad_add_parser.add_argument("-t", "--type", metavar="TYPE", type=str,
                                 help="the type of the new content, can be \"Normal\", \"Shared\", or \"DLC\" "
                                      "(optional, will default to \"Normal\" if not specified)")
     wad_add_parser.add_argument("-o", "--output", metavar="OUT", type=str,
-                                help="file to output the new WAD to (optional)")
+                                help="file to output the updated WAD to (optional)")
     # Pack WAD subcommand.
     wad_pack_parser = wad_subparsers.add_parser("pack", help="pack a directory to a WAD file",
                                                  description="pack a directory to a WAD file")
@@ -167,6 +167,20 @@ if __name__ == "__main__":
     wad_pack_parser.add_argument("output", metavar="OUT", type=str, help="WAD file to pack")
     wad_pack_parser.add_argument("-f", "--fakesign", help="fakesign the TMD and Ticket (trucha bug)",
                                  action="store_true")
+    # Remove WAD subcommand.
+    wad_remove_parser = wad_subparsers.add_parser("remove", help="remove content from a WAD file",
+                                                  description="remove content from a WAD file, either by its CID or"
+                                                              "by its index; by default, this will overwrite the input "
+                                                              "file unless an output is specified")
+    wad_remove_parser.set_defaults(func=handle_wad_remove)
+    wad_remove_parser.add_argument("input", metavar="IN", type=str, help="WAD file to remove content from")
+    wad_remove_targets = wad_remove_parser.add_mutually_exclusive_group(required=True)
+    wad_remove_targets.add_argument("-i", "--index", metavar="INDEX", type=int,
+                                    help="index of the content to remove")
+    wad_remove_targets.add_argument("-c", "--cid", metavar="CID", type=str,
+                                    help="Content ID of the content to remove")
+    wad_remove_parser.add_argument("-o", "--output", metavar="OUT", type=str,
+                                   help="file to output the updated WAD to (optional)")
     # Unpack WAD subcommand.
     wad_unpack_parser = wad_subparsers.add_parser("unpack", help="unpack a WAD file to a directory",
                                                   description="unpack a WAD file to a directory")

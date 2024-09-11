@@ -3,6 +3,7 @@
 
 import os
 import pathlib
+from multiprocessing.managers import Value
 from random import randint
 import libWiiPy
 
@@ -155,6 +156,52 @@ def handle_wad_pack(args):
         output_path.write(title.dump_wad())
 
     print("WAD file packed!")
+
+
+def handle_wad_remove(args):
+    input_path = pathlib.Path(args.input)
+    if args.output is not None:
+        output_path = pathlib.Path(args.output)
+    else:
+        output_path = pathlib.Path(args.input)
+
+    if not input_path.exists():
+        raise FileNotFoundError(input_path)
+
+    wad_file = open(input_path, 'rb')
+    title = libWiiPy.title.Title()
+    title.load_wad(wad_file.read())
+    wad_file.close()
+
+    if args.index is not None:
+        # List indices in the title, and ensure that the target content index exists.
+        valid_indices = []
+        for record in title.content.content_records:
+            valid_indices.append(record.index)
+        if args.index not in valid_indices:
+            raise ValueError("The provided content index could not be found in this title!")
+        title.content.remove_content_by_index(args.index)
+        out_file = open(output_path, 'wb')
+        out_file.write(title.dump_wad())
+        out_file.close()
+        print(f"Removed content at content index {args.index}!")
+
+    elif args.cid is not None:
+        if len(args.cid) != 8:
+            raise ValueError("The provided Content ID is invalid!")
+        target_cid = int(args.cid, 16)
+        # List Contents IDs in the title, and ensure that the target Content ID exists.
+        valid_ids = []
+        for record in title.content.content_records:
+            valid_ids.append(record.content_id)
+        if target_cid not in valid_ids:
+            raise ValueError("The provided Content ID could not be found in this title!")
+        title.content.remove_content_by_cid(target_cid)
+        out_file = open(output_path, 'wb')
+        out_file.write(title.dump_wad())
+        out_file.close()
+        print(f"Removed content with Content ID \"{target_cid:08X}\"!")
+
 
 def handle_wad_unpack(args):
     input_path = pathlib.Path(args.input)
