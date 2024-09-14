@@ -6,6 +6,7 @@ from importlib.metadata import version
 
 from modules.archive.ash import *
 from modules.archive.u8 import *
+from modules.title.ciosbuild import *
 from modules.title.emunand import *
 from modules.title.fakesign import *
 from modules.title.info import *
@@ -18,7 +19,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(
         description="A simple command line tool to manage file formats used by the Wii.")
     parser.add_argument("--version", action="version",
-                        version=f"WiiPy v1.3.0, based on libWiiPy v{version('libWiiPy')} (from branch \'main\')")
+                        version=f"WiiPy v1.4.0, based on libWiiPy v{version('libWiiPy')} (from branch \'main\')")
     subparsers = parser.add_subparsers(title="subcommands", dest="subcommand", required=True)
 
     # Argument parser for the ASH subcommand.
@@ -34,6 +35,22 @@ if __name__ == "__main__":
                             help="number of bits in each symbol tree leaf (default: 9)", default=9)
     ash_parser.add_argument("--dist-bits", metavar="DIST_BITS", type=int,
                             help="number of bits in each distance tree leaf (default: 11)", default=11)
+
+    # Argument parser for the cIOS command
+    cios_parser = subparsers.add_parser("cios", help="build a cIOS from a base IOS and provided map",
+                                        description="build a cIOS from a base IOS and provided map")
+    cios_parser.set_defaults(func=build_cios)
+    cios_parser.add_argument("base", metavar="BASE", type=str, help="base IOS WAD")
+    cios_parser.add_argument("map", metavar="MAP", type=str, help="cIOS map file")
+    cios_parser.add_argument("output", metavar="OUT", type=str, help="file to output the cIOS to")
+    cios_parser.add_argument("-c", "--cios-ver", metavar="CIOS", type=str,
+                             help="cIOS version from the map to build", required=True)
+    cios_parser.add_argument("-m", "--modules", metavar="MODULES", type=str,
+                             help="directory to look for cIOS modules in (optional, defaults to current directory)")
+    cios_parser.add_argument("-s", "--slot", metavar="SLOT", type=int,
+                             help="slot that this cIOS will install to (optional, defaults to 249)", default=249)
+    cios_parser.add_argument("-v", "--version", metavar="VERSION", type=int,
+                             help="version that this cIOS will be (optional, defaults to 65535)", default=65535)
 
     # Argument parser for the EmuNAND subcommand.
     emunand_parser = subparsers.add_parser("emunand", help="manage Wii EmuNAND directories",

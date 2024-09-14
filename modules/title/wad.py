@@ -64,7 +64,7 @@ def handle_wad_add(args):
         target_type = libWiiPy.title.ContentType.NORMAL
 
     # Call add_content to add our new content with the set parameters.
-    title.content.add_content(content_data, target_cid, target_type, title.ticket.get_title_key())
+    title.add_content(content_data, target_cid, target_type)
 
     out_file = open(output_path, 'wb')
     out_file.write(title.dump_wad())
