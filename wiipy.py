@@ -198,6 +198,24 @@ if __name__ == "__main__":
                                     help="Content ID of the content to remove")
     wad_remove_parser.add_argument("-o", "--output", metavar="OUT", type=str,
                                    help="file to output the updated WAD to (optional)")
+    # Set WAD subcommand.
+    wad_set_parser = wad_subparsers.add_parser("set", help="set content in a WAD file",
+                                               description="replace existing content in a WAD file with new decrypted "
+                                                           "data; by default, this will overwrite the input file "
+                                                           "unless an output is specified")
+    wad_set_parser.set_defaults(func=handle_wad_set)
+    wad_set_parser.add_argument("input", metavar="IN", type=str, help="WAD file to replace content in")
+    wad_set_parser.add_argument("content", metavar="CONTENT", type=str, help="new decrypted content")
+    wad_set_targets = wad_set_parser.add_mutually_exclusive_group(required=True)
+    wad_set_targets.add_argument("-i", "--index", metavar="INDEX", type=int,
+                                 help="index of the content to replace")
+    wad_set_targets.add_argument("-c", "--cid", metavar="CID", type=str,
+                                 help="Content ID of the content to replace")
+    wad_set_parser.add_argument("-o", "--output", metavar="OUT", type=str,
+                                help="file to output the updated WAD to (optional)")
+    wad_set_parser.add_argument("-t", "--type", metavar="TYPE", type=str,
+                                help="specifies a new type for the content, can be \"Normal\", \"Shared\", or \"DLC\" "
+                                     "(optional)")
     # Unpack WAD subcommand.
     wad_unpack_parser = wad_subparsers.add_parser("unpack", help="unpack a WAD file to a directory",
                                                   description="unpack a WAD file to a directory")

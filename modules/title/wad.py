@@ -202,6 +202,72 @@ def handle_wad_remove(args):
         print(f"Removed content with Content ID \"{target_cid:08X}\"!")
 
 
+def handle_wad_set(args):
+    input_path = pathlib.Path(args.input)
+    content_path = pathlib.Path(args.content)
+    if args.output is not None:
+        output_path = pathlib.Path(args.output)
+    else:
+        output_path = pathlib.Path(args.input)
+
+    if not input_path.exists():
+        raise FileNotFoundError(input_path)
+    if not content_path.exists():
+        raise FileNotFoundError(content_path)
+
+    title = libWiiPy.title.Title()
+    title.load_wad(open(input_path, "rb").read())
+
+    content_data = open(content_path, "rb").read()
+
+    # Get the new type of the content, if one was specified.
+    if args.type is not None:
+        match str.lower(args.type):
+            case "normal":
+                target_type = libWiiPy.title.ContentType.NORMAL
+            case "shared":
+                target_type = libWiiPy.title.ContentType.SHARED
+            case "dlc":
+                target_type = libWiiPy.title.ContentType.DLC
+            case _:
+                raise ValueError("The provided content type is invalid!")
+    else:
+        target_type = None
+
+    if args.index is not None:
+        # If we're replacing based on the index, then make sure the specified index exists.
+        existing_indices = []
+        for record in title.content.content_records:
+            existing_indices.append(record.index)
+        if args.index not in existing_indices:
+            raise ValueError("The provided index could not be found in this title!")
+        if target_type:
+            title.set_content(content_data, args.index, content_type=target_type)
+        else:
+            title.set_content(content_data, args.index)
+        open(output_path, "wb").write(title.dump_wad())
+        print(f"Replaced content at content index {args.index}!")
+
+
+    elif args.cid is not None:
+        # If we're replacing based on the CID, then make sure the specified CID is valid and exists.
+        if len(args.cid) != 8:
+            raise ValueError("The provided Content ID is invalid!")
+        target_cid = int(args.cid, 16)
+        existing_cids = []
+        for record in title.content.content_records:
+            existing_cids.append(record.content_id)
+        if target_cid not in existing_cids:
+            raise ValueError("The provided Content ID could not be found in this title!")
+        target_index = title.content.get_index_from_cid(target_cid)
+        if target_type:
+            title.set_content(content_data, target_index, content_type=target_type)
+        else:
+            title.set_content(content_data, target_index)
+        open(output_path, "wb").write(title.dump_wad())
+        print(f"Replaced content with Content ID \"{target_cid:08X}\"!")
+
+
 def handle_wad_unpack(args):
     input_path = pathlib.Path(args.input)
     output_path = pathlib.Path(args.output)
