@@ -6,8 +6,9 @@ from importlib.metadata import version
 
 from modules.archive.ash import *
 from modules.archive.u8 import *
+from modules.nand.emunand import *
+from modules.nand.setting import *
 from modules.title.ciosbuild import *
-from modules.title.emunand import *
 from modules.title.fakesign import *
 from modules.title.info import *
 from modules.title.iospatcher import *
@@ -71,15 +72,6 @@ if __name__ == "__main__":
                                                   "accepts a WAD file to read the TID from)")
     emunand_title_parser.add_argument("-s", "--skip-hash", help="skips validating the hashes of decrypted "
                                       "content (install only)", action="store_true")
-    # Setting generation EmuNAND command.
-    emunand_gensetting_parser = emunand_subparsers.add_parser("gen-setting",
-                                                              help="generate a new setting.txt based on the provided values",
-                                                              description="generate a new setting.txt based on the provided values")
-    emunand_gensetting_parser.set_defaults(func=handle_emunand_gensetting)
-    emunand_gensetting_parser.add_argument("serno", metavar="SERNO", type=str,
-                                           help="serial number of the console these settings are for")
-    emunand_gensetting_parser.add_argument("region", metavar="REGION", type=str,
-                                           help="region of the console these settings are for (USA, EUR, JPN, or KOR)")
 
     # Argument parser for the fakesign subcommand.
     fakesign_parser = subparsers.add_parser("fakesign", help="fakesign a TMD, Ticket, or WAD (trucha bug)",
@@ -155,6 +147,36 @@ if __name__ == "__main__":
     nus_tmd_parser.add_argument("-v", "--version", metavar="VERSION", type=int, help="version of the TMD to download")
     nus_tmd_parser.add_argument("-o", "--output", metavar="OUT", type=str,
                                 help="path to download the TMD to (optional)")
+
+    # Argument parser for the setting subcommand.
+    setting_parser = subparsers.add_parser("setting", help="manage setting.txt",
+                                           description="manage setting.txt")
+    setting_subparsers = setting_parser.add_subparsers(dest="subcommand", required=True)
+    # Decrypt setting.txt subcommand.
+    setting_dec_parser = setting_subparsers.add_parser("decrypt", help="decrypt setting.txt",
+                                                       description="decrypt setting.txt; by default, this will output "
+                                                                   "to setting_dec.txt")
+    setting_dec_parser.set_defaults(func=handle_setting_decrypt)
+    setting_dec_parser.add_argument("input", metavar="IN", type=str, help="encrypted setting.txt file to decrypt")
+    setting_dec_parser.add_argument("-o", "--output", metavar="OUT", type=str,
+                                    help="path to output the decrypted file to (optional)")
+    # Encrypt setting.txt subcommand.
+    setting_enc_parser = setting_subparsers.add_parser("encrypt", help="encrypt setting.txt",
+                                                       description="encrypt setting.txt; by default, this will output "
+                                                                   "to setting.txt")
+    setting_enc_parser.set_defaults(func=handle_setting_encrypt)
+    setting_enc_parser.add_argument("input", metavar="IN", type=str, help="decrypted setting.txt file to encrypt")
+    setting_enc_parser.add_argument("-o", "--output", metavar="OUT", type=str,
+                                    help="path to output the encrypted file to (optional)")
+    # Generate setting.txt subcommand.
+    setting_gen_parser = setting_subparsers.add_parser("gen",
+                                                       help="generate a new setting.txt based on the provided values",
+                                                       description="generate a new setting.txt based on the provided values")
+    setting_gen_parser.set_defaults(func=handle_setting_gen)
+    setting_gen_parser.add_argument("serno", metavar="SERNO", type=str,
+                                           help="serial number of the console these settings are for")
+    setting_gen_parser.add_argument("region", metavar="REGION", type=str,
+                                           help="region of the console these settings are for (USA, EUR, JPN, or KOR)")
 
     # Argument parser for the U8 subcommand.
     u8_parser = subparsers.add_parser("u8", help="pack/unpack a U8 archive",

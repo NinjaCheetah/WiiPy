@@ -1,63 +1,47 @@
-# "modules/title/emunand.py" from WiiPy by NinjaCheetah
+# "modules/nand/setting.py" from WiiPy by NinjaCheetah
 # https://github.com/NinjaCheetah/WiiPy
 
 import pathlib
 import libWiiPy
 
 
-def handle_emunand_title(args):
-    emunand = libWiiPy.nand.EmuNAND(args.emunand)
-    if args.skip_hash:
-        skip_hash = True
+def handle_setting_decrypt(args):
+    input_path = pathlib.Path(args.input)
+    if args.output is not None:
+        output_path = pathlib.Path(args.output)
     else:
-        skip_hash = False
+        output_path = pathlib.Path(input_path.stem + "_dec" + input_path.suffix)
 
-    # Code for if the --install argument was passed.
-    if args.install:
-        input_path = pathlib.Path(args.install)
+    if not input_path.exists():
+        raise FileNotFoundError(input_path)
 
-        if not input_path.exists():
-            raise FileNotFoundError(input_path)
-
-        if input_path.is_dir():
-            wad_files = list(input_path.glob("*.[wW][aA][dD]"))
-            if not wad_files:
-                raise FileNotFoundError("No WAD files were found in the provided input directory!")
-            wad_count = 0
-            for wad in wad_files:
-                title = libWiiPy.title.Title()
-                title.load_wad(open(wad, "rb").read())
-                try:
-                    emunand.install_title(title, skip_hash=skip_hash)
-                    wad_count += 1
-                except ValueError:
-                    print(f"WAD {wad} could not be installed!")
-            print(f"Successfully installed {wad_count} WAD(s) to EmuNAND!")
-        else:
-            title = libWiiPy.title.Title()
-            title.load_wad(open(input_path, "rb").read())
-            emunand.install_title(title, skip_hash=skip_hash)
-            print("Successfully installed WAD to EmuNAND!")
-
-    # Code for if the --uninstall argument was passed.
-    elif args.uninstall:
-        input_str = args.uninstall
-        if pathlib.Path(input_str).exists():
-            title = libWiiPy.title.Title()
-            title.load_wad(open(pathlib.Path(input_str), "rb").read())
-            target_tid = title.tmd.title_id
-        else:
-            target_tid = input_str
-
-        if len(target_tid) != 16:
-            raise ValueError("Invalid Title ID! Title IDs must be 16 characters long.")
-
-        emunand.uninstall_title(target_tid)
-
-        print("Title uninstalled from EmuNAND!")
+    # Load and decrypt the provided file.
+    setting = libWiiPy.nand.SettingTxt()
+    setting.load(open(input_path, "rb").read())
+    # Write out the decrypted data.
+    open(output_path, "w").write(setting.dump_decrypted())
+    print("Successfully decrypted setting.txt!")
 
 
-def handle_emunand_gensetting(args):
+def handle_setting_encrypt(args):
+    input_path = pathlib.Path(args.input)
+    if args.output is not None:
+        output_path = pathlib.Path(args.output)
+    else:
+        output_path = pathlib.Path("setting.txt")
+
+    if not input_path.exists():
+        raise FileNotFoundError(input_path)
+
+    # Load and encrypt the provided file.
+    setting = libWiiPy.nand.SettingTxt()
+    setting.load_decrypted(open(input_path, "r").read())
+    # Write out the encrypted data.
+    open(output_path, "wb").write(setting.dump())
+    print("Successfully encrypted setting.txt!")
+
+
+def handle_setting_gen(args):
     # Validate the provided SN. It should be 2 or 3 letters followed by 9 numbers.
     if len(args.serno) != 11 and len(args.serno) != 12:
         raise ValueError("The provided Serial Number is not valid!")
@@ -113,3 +97,4 @@ def handle_emunand_gensetting(args):
     setting.game = game
     # Write out the setting.txt file.
     open("setting.txt", "wb").write(setting.dump())
+    print(f"Successfully created setting.txt for console with serial number {args.serno}!")
