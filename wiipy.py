@@ -71,6 +71,15 @@ if __name__ == "__main__":
                                                   "accepts a WAD file to read the TID from)")
     emunand_title_parser.add_argument("-s", "--skip-hash", help="skips validating the hashes of decrypted "
                                       "content (install only)", action="store_true")
+    # Setting generation EmuNAND command.
+    emunand_gensetting_parser = emunand_subparsers.add_parser("gen-setting",
+                                                              help="generate a new setting.txt based on the provided values",
+                                                              description="generate a new setting.txt based on the provided values")
+    emunand_gensetting_parser.set_defaults(func=handle_emunand_gensetting)
+    emunand_gensetting_parser.add_argument("serno", metavar="SERNO", type=str,
+                                           help="serial number of the console these settings are for")
+    emunand_gensetting_parser.add_argument("region", metavar="REGION", type=str,
+                                           help="region of the console these settings are for (USA, EUR, JPN, or KOR)")
 
     # Argument parser for the fakesign subcommand.
     fakesign_parser = subparsers.add_parser("fakesign", help="fakesign a TMD, Ticket, or WAD (trucha bug)",
