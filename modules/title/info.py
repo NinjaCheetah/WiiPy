@@ -1,6 +1,7 @@
 # "modules/title/info.py" from WiiPy by NinjaCheetah
 # https://github.com/NinjaCheetah/WiiPy
 
+import re
 import pathlib
 import binascii
 import libWiiPy
@@ -128,6 +129,35 @@ def _print_wad_info(title: libWiiPy.title.Title):
     print("")
     _print_tmd_info(title.tmd)
 
+def _print_u8_info(u8_archive: libWiiPy.archive.U8Archive):
+    # Build the file structure of the U8 archive and print it out.
+    print(f"U8 Info")
+    # This variable stores the path of the directory we're currently processing.
+    current_dir = pathlib.Path()
+    # This variable stores the order of directory nodes leading to the current working directory, to make sure that
+    # things get where they belong.
+    parent_dirs = [0]
+    for node in range(len(u8_archive.u8_node_list)):
+        # Code for a directory node (excluding the root node since that already exists).
+        if u8_archive.u8_node_list[node].type == 1 and u8_archive.u8_node_list[node].name_offset != 0:
+            if u8_archive.u8_node_list[node].data_offset == parent_dirs[-1]:
+                current_dir = current_dir.joinpath(u8_archive.file_name_list[node])
+                print(("│" * (len(parent_dirs) - 1) + "├┬ ") + str(current_dir.name) + "/")
+                parent_dirs.append(node)
+            else:
+                # Go up until we're back at the correct level.
+                while u8_archive.u8_node_list[node].data_offset != parent_dirs[-1]:
+                    parent_dirs.pop()
+                parent_dirs.append(node)
+                current_dir = pathlib.Path()
+                # Rebuild current working directory, and make sure all directories in the path exist.
+                for directory in parent_dirs:
+                    current_dir = current_dir.joinpath(u8_archive.file_name_list[directory])
+                    #print(("│" * (len(parent_dirs) - 1) + "┬ ") + str(current_dir.name))
+        # Code for a file node.
+        elif u8_archive.u8_node_list[node].type == 0:
+            print(("│" * (len(parent_dirs) - 1) + "├ ") + u8_archive.file_name_list[node])
+
 
 def handle_info(args):
     input_path = pathlib.Path(args.input)
@@ -135,11 +165,11 @@ def handle_info(args):
     if not input_path.exists():
         raise FileNotFoundError(input_path)
 
-    if input_path.suffix.lower() == ".tmd":
+    if input_path.suffix.lower() == ".tmd" or input_path.name == "tmd.bin" or re.match("tmd.?[0-9]*", input_path.name):
         tmd = libWiiPy.title.TMD()
         tmd.load(open(input_path, "rb").read())
         _print_tmd_info(tmd)
-    elif input_path.suffix.lower() == ".tik":
+    elif input_path.suffix.lower() == ".tik" or input_path.name == "ticket.bin" or input_path.name == "cetk":
         tik = libWiiPy.title.Ticket()
         tik.load(open(input_path, "rb").read())
         _print_ticket_info(tik)
@@ -147,5 +177,24 @@ def handle_info(args):
         title = libWiiPy.title.Title()
         title.load_wad(open(input_path, "rb").read())
         _print_wad_info(title)
+    elif input_path.suffix.lower() == ".arc":
+        u8_archive = libWiiPy.archive.U8Archive()
+        u8_archive.load(open(input_path, "rb").read())
+        _print_u8_info(u8_archive)
     else:
-        raise TypeError("This does not appear to be a TMD, Ticket, or WAD! No info can be provided.")
+        # Try file types that have a matchable magic number if we can't tell the easy way.
+        magic_number = open(input_path, "rb").read(8)
+        if magic_number == b'\x00\x00\x00\x20\x49\x73\x00\x00' or magic_number == b'\x00\x00\x00\x20\x69\x62\x00\x00':
+            title = libWiiPy.title.Title()
+            title.load_wad(open(input_path, "rb").read())
+            _print_wad_info(title)
+            return
+        # This is the length of a normal magic number, WADs just require a little more checking.
+        magic_number = open(input_path, "rb").read(4)
+        # U8 archives have an annoying number of possible extensions, so this is definitely necessary.
+        if magic_number == b'\x55\xAA\x38\x2D':
+            u8_archive = libWiiPy.archive.U8Archive()
+            u8_archive.load(open(input_path, "rb").read())
+            _print_u8_info(u8_archive)
+            return
+        raise TypeError("This does not appear to be a supported file type! No info can be provided.")

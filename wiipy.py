@@ -82,8 +82,8 @@ if __name__ == "__main__":
     fakesign_parser.add_argument("-o", "--output", metavar="OUT", type=str, help="output file (optional)")
 
     # Argument parser for the info command.
-    info_parser = subparsers.add_parser("info", help="get information about a TMD, Ticket, or WAD",
-                                        description="get information about a TMD, Ticket, or WAD")
+    info_parser = subparsers.add_parser("info", help="get information about a Wii file",
+                                        description="get information about a Wii file")
     info_parser.set_defaults(func=handle_info)
     info_parser.add_argument("input", metavar="IN", type=str, help="input file")
 
