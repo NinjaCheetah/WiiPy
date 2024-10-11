@@ -66,6 +66,9 @@ def handle_wad_add(args):
     # Call add_content to add our new content with the set parameters.
     title.add_content(content_data, target_cid, target_type)
 
+    # Auto fakesign because we've edited the title.
+    title.fakesign()
+
     out_file = open(output_path, 'wb')
     out_file.write(title.dump_wad())
     out_file.close()
@@ -180,6 +183,8 @@ def handle_wad_remove(args):
         if args.index not in valid_indices:
             raise ValueError("The provided content index could not be found in this title!")
         title.content.remove_content_by_index(args.index)
+        # Auto fakesign because we've edited the title.
+        title.fakesign()
         out_file = open(output_path, 'wb')
         out_file.write(title.dump_wad())
         out_file.close()
@@ -196,6 +201,8 @@ def handle_wad_remove(args):
         if target_cid not in valid_ids:
             raise ValueError("The provided Content ID could not be found in this title!")
         title.content.remove_content_by_cid(target_cid)
+        # Auto fakesign because we've edited the title.
+        title.fakesign()
         out_file = open(output_path, 'wb')
         out_file.write(title.dump_wad())
         out_file.close()
@@ -245,6 +252,8 @@ def handle_wad_set(args):
             title.set_content(content_data, args.index, content_type=target_type)
         else:
             title.set_content(content_data, args.index)
+        # Auto fakesign because we've edited the title.
+        title.fakesign()
         open(output_path, "wb").write(title.dump_wad())
         print(f"Replaced content at content index {args.index}!")
 
@@ -264,6 +273,8 @@ def handle_wad_set(args):
             title.set_content(content_data, target_index, content_type=target_type)
         else:
             title.set_content(content_data, target_index)
+        # Auto fakesign because we've edited the title.
+        title.fakesign()
         open(output_path, "wb").write(title.dump_wad())
         print(f"Replaced content with Content ID \"{target_cid:08X}\"!")
 

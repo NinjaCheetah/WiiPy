@@ -179,6 +179,8 @@ remakewad.pl
 content.map
 uid.sys
 SYSCONF
+setting.txt
+ciosmaps.xml
 
 # Also awful macOS files
 *._*
