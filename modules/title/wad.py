@@ -332,3 +332,53 @@ def handle_wad_unpack(args):
             content_out.close()
 
     print("WAD file unpacked!")
+
+
+def handle_wad_d2r(args):
+    input_path = pathlib.Path(args.input)
+    output_path = pathlib.Path(input_path.stem + "_retail" + input_path.suffix)
+
+    if not input_path.exists():
+        raise FileNotFoundError(input_path)
+
+    title = libWiiPy.title.Title()
+    title.load_wad(input_path.read_bytes())
+    # First, verify that this IS actually a dev WAD.
+    if not title.ticket.is_dev:
+        raise ValueError("This is not a development WAD!")
+    # Now, extract the Title Key, change the certs in the TMD/tik, and set the new retail-encrypted Title Key. The certs
+    # need to be changed so that this WAD can be identified as retail later. The WAD will also be fakesigned, since
+    # making this change invalidates the signature, so there's no downside.
+    title_key = title.ticket.get_title_key()
+    title.ticket.signature_issuer = "Root-CA00000001-XS00000003" + title.ticket.signature_issuer[26:]
+    title_key_retail = libWiiPy.title.encrypt_title_key(title_key, 0, title.ticket.title_id, False)
+    title.ticket.title_key_enc = title_key_retail
+    title.tmd.signature_issuer = "Root-CA00000001-CP00000004" + title.tmd.signature_issuer[26:]
+    title.fakesign()
+    open(output_path, "wb").write(title.dump_wad())
+    print(f"Successfully converted development WAD to retail WAD \"{output_path.name}\"!")
+
+
+def handle_wad_r2d(args):
+    input_path = pathlib.Path(args.input)
+    output_path = pathlib.Path(input_path.stem + "_dev" + input_path.suffix)
+
+    if not input_path.exists():
+        raise FileNotFoundError(input_path)
+
+    title = libWiiPy.title.Title()
+    title.load_wad(input_path.read_bytes())
+    # First, verify that this IS actually a retail WAD.
+    if title.ticket.is_dev:
+        raise ValueError("This is not a retail WAD!")
+    # Now, extract the Title Key, change the certs in the TMD/tik, and set the new dev-encrypted Title Key. The certs
+    # need to be changed so that this WAD can be identified as dev later. The WAD will also be fakesigned, since making
+    # this change invalidates the signature, so there's no downside.
+    title_key = title.ticket.get_title_key()
+    title.ticket.signature_issuer = "Root-CA00000002-XS00000006" + title.ticket.signature_issuer[26:]
+    title_key_dev = libWiiPy.title.encrypt_title_key(title_key, 0, title.ticket.title_id, True)
+    title.ticket.title_key_enc = title_key_dev
+    title.tmd.signature_issuer = "Root-CA00000002-CP00000007" + title.tmd.signature_issuer[26:]
+    title.fakesign()
+    open(output_path, "wb").write(title.dump_wad())
+    print(f"Successfully converted retail WAD to development WAD \"{output_path.name}\"!")

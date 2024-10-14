@@ -207,6 +207,12 @@ if __name__ == "__main__":
                                      "(optional, will default to \"Normal\" if not specified)")
     wad_add_parser.add_argument("-o", "--output", metavar="OUT", type=str,
                                 help="file to output the updated WAD to (optional)")
+    # dev2retail WAD subcommand.
+    wad_d2r_parser = wad_subparsers.add_parser("dev2retail", help="re-encrypt a dev WAD for retail consoles",
+                                               description="re-encrypt a dev WAD for retail consoles, and update"
+                                                           "the certs to match; this also fakesigns the WAD")
+    wad_d2r_parser.set_defaults(func=handle_wad_d2r)
+    wad_d2r_parser.add_argument("input", metavar="IN", type=str, help="dev WAD file to re-encrypt")
     # Pack WAD subcommand.
     wad_pack_parser = wad_subparsers.add_parser("pack", help="pack a directory to a WAD file",
                                                  description="pack a directory to a WAD file")
@@ -229,6 +235,12 @@ if __name__ == "__main__":
                                     help="Content ID of the content to remove")
     wad_remove_parser.add_argument("-o", "--output", metavar="OUT", type=str,
                                    help="file to output the updated WAD to (optional)")
+    # retail2dev WAD subcommand.
+    wad_r2d_parser = wad_subparsers.add_parser("retail2dev", help="re-encrypt a retail WAD for development consoles",
+                                               description="re-encrypt a retail WAD for development consoles, and "
+                                                           "update the certs to match; this also fakesigns the WAD")
+    wad_r2d_parser.set_defaults(func=handle_wad_r2d)
+    wad_r2d_parser.add_argument("input", metavar="IN", type=str, help="retail WAD file to re-encrypt")
     # Set WAD subcommand.
     wad_set_parser = wad_subparsers.add_parser("set", help="set content in a WAD file",
                                                description="replace existing content in a WAD file with new decrypted "
