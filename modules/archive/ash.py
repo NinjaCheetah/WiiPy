@@ -5,34 +5,28 @@ import pathlib
 import libWiiPy
 
 
-def handle_ash(args):
+def handle_ash_compress(args):
+    print("Compression is not implemented yet.")
+
+
+def handle_ash_decompress(args):
     input_path = pathlib.Path(args.input)
-    output_path = pathlib.Path(args.output)
+    if args.output is not None:
+        output_path = pathlib.Path(args.output)
+    else:
+        output_path = pathlib.Path(input_path.name + ".arc")
 
-    # Code for if --compress was passed.
-    # ASH compression has not been implemented in libWiiPy yet, but it'll be filled in here when it has.
-    if args.compress:
-        print("Compression is not implemented yet.")
+    # These default to 9 and 11, respectively, so we can always read them.
+    sym_tree_bits = args.sym_bits
+    dist_tree_bits = args.dist_bits
 
-    # Code for if --decompress was passed.
-    elif args.decompress:
-        # These default to 9 and 11, respectively, so we can always read them.
-        sym_tree_bits = args.sym_bits
-        dist_tree_bits = args.dist_bits
+    if not input_path.exists():
+        raise FileNotFoundError(input_path)
 
-        if not input_path.exists():
-            raise FileNotFoundError(input_path)
+    ash_data = input_path.read_bytes()
+    # Decompress ASH file using the provided symbol/distance tree widths.
+    ash_decompressed = libWiiPy.archive.decompress_ash(ash_data, sym_tree_bits=sym_tree_bits,
+                                                       dist_tree_bits=dist_tree_bits)
+    output_path.write_bytes(ash_decompressed)
 
-        ash_file = open(input_path, "rb")
-        ash_data = ash_file.read()
-        ash_file.close()
-
-        # Decompress ASH file using the provided symbol/distance tree widths.
-        ash_decompressed = libWiiPy.archive.decompress_ash(ash_data, sym_tree_bits=sym_tree_bits,
-                                                           dist_tree_bits=dist_tree_bits)
-
-        ash_out = open(output_path, "wb")
-        ash_out.write(ash_decompressed)
-        ash_out.close()
-
-        print("ASH file decompressed!")
+    print("ASH file decompressed!")

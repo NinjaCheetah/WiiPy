@@ -15,27 +15,44 @@ from modules.title.iospatcher import *
 from modules.title.nus import *
 from modules.title.wad import *
 
+wiipy_ver = "1.4.0"
+
 if __name__ == "__main__":
     # Main argument parser.
     parser = argparse.ArgumentParser(
         description="A simple command line tool to manage file formats used by the Wii.")
     parser.add_argument("--version", action="version",
-                        version=f"WiiPy v1.4.0, based on libWiiPy v{version('libWiiPy')} (from branch \'main\')")
+                        version=f"WiiPy v{wiipy_ver}, based on libWiiPy v{version('libWiiPy')} (from branch \'main\')")
     subparsers = parser.add_subparsers(title="subcommands", dest="subcommand", required=True)
 
     # Argument parser for the ASH subcommand.
     ash_parser = subparsers.add_parser("ash", help="compress/decompress an ASH file",
                                        description="compress/decompress an ASH file")
-    ash_parser.set_defaults(func=handle_ash)
-    ash_group = ash_parser.add_mutually_exclusive_group(required=True)
-    ash_group.add_argument("-c", "--compress", help="compress a file into an ASH file", action="store_true")
-    ash_group.add_argument("-d", "--decompress", help="decompress an ASH file", action="store_true")
-    ash_parser.add_argument("input", metavar="IN", type=str, help="input file")
-    ash_parser.add_argument("output", metavar="OUT", type=str, help="output file")
-    ash_parser.add_argument("--sym-bits", metavar="SYM_BITS", type=int,
+    ash_subparsers = ash_parser.add_subparsers(title="emunand", dest="emunand", required=True)
+    # ASH compress parser.
+    ash_compress_parser = ash_subparsers.add_parser("compress", help="compress a file into an ASH file",
+                                                    description="compress a file into an ASH file; by default, this "
+                                                                "will output to <input file>.ash")
+    ash_compress_parser.set_defaults(func=handle_ash_compress)
+    ash_compress_parser.add_argument("input", metavar="IN", type=str, help="file to compress")
+    ash_compress_parser.add_argument("--sym-bits", metavar="SYM_BITS", type=int,
                             help="number of bits in each symbol tree leaf (default: 9)", default=9)
-    ash_parser.add_argument("--dist-bits", metavar="DIST_BITS", type=int,
+    ash_compress_parser.add_argument("--dist-bits", metavar="DIST_BITS", type=int,
                             help="number of bits in each distance tree leaf (default: 11)", default=11)
+    ash_compress_parser.add_argument("-o", "--output", metavar="OUT", type=str,
+                                     help="file to output the ASH file to (optional)")
+    # ASH decompress parser.
+    ash_decompress_parser = ash_subparsers.add_parser("decompress", help="decompress an ASH file",
+                                                      description="decompress an ASH file; by default, this will "
+                                                                  "output to <input file>.arc")
+    ash_decompress_parser.set_defaults(func=handle_ash_decompress)
+    ash_decompress_parser.add_argument("input", metavar="IN", type=str, help="ASH file to decompress")
+    ash_decompress_parser.add_argument("--sym-bits", metavar="SYM_BITS", type=int,
+                            help="number of bits in each symbol tree leaf (default: 9)", default=9)
+    ash_decompress_parser.add_argument("--dist-bits", metavar="DIST_BITS", type=int,
+                            help="number of bits in each distance tree leaf (default: 11)", default=11)
+    ash_decompress_parser.add_argument("-o", "--output", metavar="OUT", type=str,
+                                     help="file to output the ASH file to (optional)")
 
     # Argument parser for the cIOS command
     cios_parser = subparsers.add_parser("cios", help="build a cIOS from a base IOS and provided map",
