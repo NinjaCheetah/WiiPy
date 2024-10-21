@@ -1,7 +1,6 @@
 # "modules/title/nus.py" from WiiPy by NinjaCheetah
 # https://github.com/NinjaCheetah/WiiPy
 
-import os
 import hashlib
 import pathlib
 import binascii
@@ -37,12 +36,10 @@ def handle_nus_title(args):
     if args.output is not None:
         output_dir = pathlib.Path(args.output)
         if output_dir.exists():
-            if output_dir.is_dir() and next(os.scandir(output_dir), None):
-                raise ValueError("Output folder is not empty!")
-            elif output_dir.is_file():
+            if output_dir.is_file():
                 raise ValueError("A file already exists with the provided directory name!")
         else:
-            os.mkdir(output_dir)
+            output_dir.mkdir()
 
     # Download the title from the NUS. This is done "manually" (as opposed to using download_title()) so that we can
     # provide verbose output.
@@ -62,9 +59,7 @@ def handle_nus_title(args):
         title_version = title.tmd.title_version
     # Write out the TMD to a file.
     if output_dir is not None:
-        tmd_out = open(output_dir.joinpath("tmd." + str(title_version)), "wb")
-        tmd_out.write(title.tmd.dump())
-        tmd_out.close()
+        output_dir.joinpath("tmd." + str(title_version)).write_bytes(title.tmd.dump())
 
     # Download the ticket, if we can.
     print(" - Downloading and parsing Ticket...")
@@ -72,9 +67,7 @@ def handle_nus_title(args):
         title.load_ticket(libWiiPy.title.download_ticket(tid, wiiu_endpoint=wiiu_nus_enabled))
         can_decrypt = True
         if output_dir is not None:
-            ticket_out = open(output_dir.joinpath("tik"), "wb")
-            ticket_out.write(title.ticket.dump())
-            ticket_out.close()
+            output_dir.joinpath("tik").write_bytes(title.ticket.dump())
     except ValueError:
         # If libWiiPy returns an error, then no ticket is available. Log this, and disable options requiring a
         # ticket so that they aren't attempted later.
@@ -100,9 +93,7 @@ def handle_nus_title(args):
         print("   - Done!")
         # If we're supposed to be outputting to a folder, then write these files out.
         if output_dir is not None:
-            enc_content_out = open(output_dir.joinpath(content_file_name), "wb")
-            enc_content_out.write(content_list[content])
-            enc_content_out.close()
+            output_dir.joinpath(content_file_name).write_bytes(content_list[content])
     title.content.content_list = content_list
 
     # Try to decrypt the contents for this title if a ticket was available.
@@ -113,9 +104,7 @@ def handle_nus_title(args):
                       " (Content ID: " + str(title.tmd.content_records[content].content_id) + ")...")
                 dec_content = title.get_content_by_index(content)
                 content_file_name = f"{title.tmd.content_records[content].content_id:08X}".lower() + ".app"
-                dec_content_out = open(output_dir.joinpath(content_file_name), "wb")
-                dec_content_out.write(dec_content)
-                dec_content_out.close()
+                output_dir.joinpath(content_file_name).write_bytes(dec_content)
         else:
             print("Title has no Ticket, so content will not be decrypted!")
 
@@ -129,9 +118,7 @@ def handle_nus_title(args):
         if wad_file.suffix != ".wad":
             wad_file = wad_file.with_suffix(".wad")
         # Have libWiiPy dump the WAD, and write that data out.
-        file = open(wad_file, "wb")
-        file.write(title.dump_wad())
-        file.close()
+        pathlib.Path(wad_file).write_bytes(title.dump_wad())
 
     print("Downloaded title with Title ID \"" + args.tid + "\"!")
 
@@ -140,7 +127,6 @@ def handle_nus_content(args):
     tid = args.tid
     cid = args.cid
     version = args.version
-    out = args.output
     if args.decrypt:
         decrypt_content = True
     else:
@@ -151,23 +137,21 @@ def handle_nus_content(args):
     try:
         content_id = int.from_bytes(binascii.unhexlify(cid))
     except binascii.Error:
-        print("Invalid Content ID! Content ID must be in format \"000000xx\"!")
-        return
+        raise ValueError("Invalid Content ID! Content ID must be in format \"000000xx\"!")
 
     # Use the supplied output path if one was specified, otherwise generate one using the Content ID.
-    if out is None:
+    if args.output is None:
         content_file_name = f"{content_id:08X}".lower()
         output_path = pathlib.Path(content_file_name)
     else:
-        output_path = pathlib.Path(out)
+        output_path = pathlib.Path(args.output)
 
     # Try to download the content, and catch the ValueError libWiiPy will throw if it can't be found.
     print("Downloading content with Content ID " + cid + "...")
     try:
         content_data = libWiiPy.title.download_content(tid, content_id)
     except ValueError:
-        print("The Title ID or Content ID you specified could not be found!")
-        return
+        raise ValueError("The Title ID or Content ID you specified could not be found!")
 
     if decrypt_content is True:
         # Ensure that a version was supplied, because we need the matching TMD for decryption to work.
@@ -209,46 +193,38 @@ def handle_nus_content(args):
             raise ValueError("The decrypted content provided does not match the record at the provided index. \n"
                              "Expected hash is: {}\n".format(content_hash) +
                              "Actual hash is: {}".format(content_dec_hash))
-        file = open(output_path, "wb")
-        file.write(content_dec)
-        file.close()
+        output_path.write_bytes(content_dec)
     else:
-        file = open(output_path, "wb")
-        file.write(content_data)
-        file.close()
+        output_path.write_bytes(content_data)
 
-    print("Downloaded content with Content ID \"" + cid + "\"!")
+    print(f"Downloaded content with Content ID \"{cid}\"!")
 
 
 def handle_nus_tmd(args):
     tid = args.tid
-    version = args.version
-    out = args.output
 
     # Check if --version was passed, because it'll be None if it wasn't.
     if args.version is not None:
         try:
-            title_version = int(args.version)
+            version = int(args.version)
         except ValueError:
-            print("Enter a valid integer for the Title Version.")
-            return
+            raise ValueError("Enter a valid integer for the TMD Version.")
+    else:
+        version = None
 
     # Use the supplied output path if one was specified, otherwise generate one using the Title ID.
-    if out is None:
+    if args.output is None:
         output_path = pathlib.Path(tid + ".tmd")
     else:
-        output_path = pathlib.Path(out)
+        output_path = pathlib.Path(args.output)
 
     # Try to download the TMD, and catch the ValueError libWiiPy will throw if it can't be found.
-    print("Downloading TMD for title " + tid + "...")
+    print(f"Downloading TMD for title {tid}...")
     try:
         tmd_data = libWiiPy.title.download_tmd(tid, version)
     except ValueError:
-        print("The Title ID or version you specified could not be found!")
-        return
+        raise ValueError("The Title ID or version you specified could not be found!")
 
-    file = open(output_path, "wb")
-    file.write(tmd_data)
-    file.close()
+    output_path.write_bytes(tmd_data)
 
-    print("Downloaded TMD for title \"" + tid + "\"!")
+    print(f"Downloaded TMD for title \"{tid}\"!")
