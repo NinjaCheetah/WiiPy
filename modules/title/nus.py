@@ -212,9 +212,13 @@ def handle_nus_tmd(args):
     else:
         version = None
 
-    # Use the supplied output path if one was specified, otherwise generate one using the Title ID.
+    # Use the supplied output path if one was specified, otherwise generate one using the Title ID. If a version has
+    # been specified, append the version to the end of the path as well.
     if args.output is None:
-        output_path = pathlib.Path(tid + ".tmd")
+        if version is not None:
+            output_path = pathlib.Path(f"{tid}.tmd.{version}")
+        else:
+            output_path = pathlib.Path(f"{tid}.tmd")
     else:
         output_path = pathlib.Path(args.output)
 
