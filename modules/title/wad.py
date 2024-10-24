@@ -109,10 +109,6 @@ def handle_wad_pack(args):
     content_files = list(input_path.glob("*.[aA][pP][pP]"))
     if not content_files:
         raise FileNotFoundError("No contents found! Cannot pack WAD.")
-    # Semi-hacky sorting method, but it works. Should maybe be changed eventually.
-    content_files_ordered = []
-    for index in range(len(content_files)):
-        content_files_ordered.append(pathlib.Path(content_files[index]))
 
     # Open the output file, and load all the component files that we've now verified we have into a libWiiPy Title()
     # object.
@@ -127,6 +123,16 @@ def handle_wad_pack(args):
         title.wad.set_meta_data(footer_file.read_bytes())
     # Method to ensure that the title's content records match between the TMD() and ContentRegion() objects.
     title.load_content_records()
+    # Sort the contents based on the records. May still be kinda hacky.
+    content_indices = []
+    for record in title.content.content_records:
+        content_indices.append(record.index)
+    content_files_ordered = []
+    for _ in content_files:
+        content_files_ordered.append(None)
+    for index in range(len(content_files)):
+        target_index = content_indices.index(int(content_files[index].stem, 16))
+        content_files_ordered[target_index] = content_files[index]
     # Iterate over every file in the content_files list, and set them in the Title().
     for index in range(title.content.num_contents):
         dec_content = content_files_ordered[index].read_bytes()
@@ -288,7 +294,8 @@ def handle_wad_unpack(args):
         skip_hash = False
 
     for content_file in range(0, title.tmd.num_contents):
-        content_file_name = f"{content_file:08X}".lower() + ".app"
+        content_index = title.content.content_records[content_file].index
+        content_file_name = f"{content_index:08X}".lower() + ".app"
         output_path.joinpath(content_file_name).write_bytes(title.get_content_by_index(content_file, skip_hash))
 
     print("WAD file unpacked!")

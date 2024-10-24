@@ -106,7 +106,7 @@ if __name__ == "__main__":
 
     # Argument parser for the iospatch command.
     iospatch_parser = subparsers.add_parser("iospatch", help="patch IOS WADs to re-enable exploits",
-                                            description="patch IOS WADs to re-enable exploits; by default, this will"
+                                            description="patch IOS WADs to re-enable exploits; by default, this will "
                                                         "overwrite the input file in place unless you use -o/--output")
     iospatch_parser.set_defaults(func=handle_iospatch)
     iospatch_parser.add_argument("input", metavar="IN", type=str, help="input file")
@@ -117,7 +117,7 @@ if __name__ == "__main__":
     iospatch_parser.add_argument("-vd", "--version-downgrading", action="store_true",
                                  help="patch in version downgrading support")
     iospatch_parser.add_argument("-di", "--drive-inquiry", action="store_true",
-                                 help="patches out the drive inquiry check")
+                                 help="patches out the drive inquiry (EXPERIMENTAL)")
     iospatch_parser.add_argument("-v", "--version", metavar="VERSION", type=int, help="set the IOS version")
     iospatch_parser.add_argument("-s", "--slot", metavar="SLOT", type=int,
                                  help="set the slot that this IOS will install to")
