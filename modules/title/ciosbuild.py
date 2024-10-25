@@ -89,18 +89,27 @@ def build_cios(args):
             # Set the content in the title to the newly-patched content, and set the type to normal.
             title.set_content(dec_content, content_index, content_type=libWiiPy.title.ContentType.NORMAL)
 
-    # Next phase of cIOS building is to add the required extra modules to the end.
+    # Next phase of cIOS building is to add the required extra modules.
     for content in target_base.findall("content"):
         target_module = content.get("module")
         if target_module is not None:
+            target_index = int(content.get("tmdmoduleid"), 16)
             # The cIOS map supplies a Content ID to use for each additional module.
             cid = int(content.get("id")[-2:], 16)
             target_path = modules_path.joinpath(target_module + ".app")
-            if target_path.exists():
-                new_module = open(target_path, "rb").read()
+            if not target_path.exists():
+                raise Exception(f"A required module \"{target_module}.app\" could not be found!")
+            # Check where this module belongs. If it's -1, add it to the end. If it's any other value, this module needs
+            # to go at the index specified.
+            new_module = target_path.read_bytes()
+            if target_index == -1:
                 title.add_content(new_module, cid, libWiiPy.title.ContentType.NORMAL)
             else:
-                raise Exception(f"A required module \"{target_module}.app\" could not be found!")
+                existing_module = title.get_content_by_index(target_index)
+                existing_cid = title.content.content_records[target_index].content_id
+                existing_type = title.content.content_records[target_index].content_type
+                title.set_content(new_module, target_index, cid, libWiiPy.title.ContentType.NORMAL)
+                title.add_content(existing_module, existing_cid, existing_type)
 
     # Last cIOS building step, we need to set the slot and version.
     slot = args.slot
