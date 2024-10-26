@@ -95,7 +95,7 @@ def _print_ticket_info(ticket: libWiiPy.title.Ticket):
             key = "vWii"
         case _:
             key = "Unknown (Likely Common)"
-    print(f"  Common Key: {key}")
+    print(f"  Decryption Key: {key}")
     print(f"  Title Key (Encrypted): {binascii.hexlify(ticket.title_key_enc).decode()}")
     print(f"  Title Key (Decrypted): {binascii.hexlify(ticket.get_title_key()).decode()}")
 

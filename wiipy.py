@@ -284,6 +284,13 @@ if __name__ == "__main__":
     wad_unpack_parser.add_argument("output", metavar="OUT", type=str, help="output directory")
     wad_unpack_parser.add_argument("-s", "--skip-hash", help="skips validating the hashes of decrypted "
                                    "content", action="store_true")
+    # vwii2wii WAD subcommand.
+    wad_v2w_parser = wad_subparsers.add_parser("vwii2wii", help="re-encrypt a vWii WAD with the common key",
+                                               description="re-encrypt a vWii WAD with the common key, allowing it to "
+                                                           "be installed in Dolphin and from within Wii mode on Wii U; "
+                                                           "this also fakesigns the WAD")
+    wad_v2w_parser.set_defaults(func=handle_wad_v2w)
+    wad_v2w_parser.add_argument("input", metavar="IN", type=str, help="vWii WAD file to re-encrypt")
 
 
     # Parse all the args, and call the appropriate function with all of those args if a valid subcommand was passed.

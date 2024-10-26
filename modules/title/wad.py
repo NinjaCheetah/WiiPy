@@ -349,3 +349,28 @@ def handle_wad_r2d(args):
     title.fakesign()
     output_path.write_bytes(title.dump_wad())
     print(f"Successfully converted retail WAD to development WAD \"{output_path.name}\"!")
+
+
+def handle_wad_v2w(args):
+    input_path = pathlib.Path(args.input)
+    output_path = pathlib.Path(input_path.stem + "_Wii" + input_path.suffix)
+
+    if not input_path.exists():
+        raise FileNotFoundError(input_path)
+
+    title = libWiiPy.title.Title()
+    title.load_wad(input_path.read_bytes())
+    # First, verify that this IS actually a vWii WAD.
+    if title.ticket.common_key_index != 2:
+        raise ValueError("This is not a vWii WAD!")
+    # Now, extract the Title Key, change the required flags in the TMD/tik, and set the new common key encrypted
+    # Title Key. The WAD will also be fakesigned, since making  this change invalidates the signature, so there's no
+    # downside.
+    title_key_dec = title.ticket.get_title_key()
+    title_key_common = libWiiPy.title.encrypt_title_key(title_key_dec, 0, title.tmd.title_id)
+    title.ticket.title_key_enc = title_key_common
+    title.ticket.common_key_index = 0
+    title.tmd.vwii = 0
+    title.fakesign()
+    output_path.write_bytes(title.dump_wad())
+    print(f"Successfully re-encrypted vWii WAD to regular WAD \"{output_path.name}\"!")
