@@ -55,9 +55,11 @@ def build_cios(args):
     base_version = int(target_base.get("version"))
     if title.tmd.title_version != base_version:
         raise ValueError("The provided base IOS does not match the required version for this base!")
+    print(f"Building cIOS \"{args.cios_ver}\" from base IOS{target_base.get('ios')} v{base_version}...")
 
     # We're ready to begin building the cIOS now. Find all the <content> tags that have <patch> tags, and then apply
     # the patches listed in them to the content.
+    print("Patching existing modules...")
     for content in target_base.findall("content"):
         patches = content.findall("patch")
         if patches:
@@ -90,6 +92,7 @@ def build_cios(args):
             title.set_content(dec_content, content_index, content_type=libWiiPy.title.ContentType.NORMAL)
 
     # Next phase of cIOS building is to add the required extra modules.
+    print("Adding required additional modules...")
     for content in target_base.findall("content"):
         target_module = content.get("module")
         if target_module is not None:
@@ -122,6 +125,7 @@ def build_cios(args):
         title.set_title_version(args.version)
     except ValueError:
         raise ValueError(f"The provided version \"{args.version}\" is not valid!")
+    print(f"Set cIOS slot to \"{slot}\" and cIOS version to \"{args.version}\"!")
 
     # If this is a vWii cIOS, then we need to re-encrypt it with the Wii Common key so that it's installable from
     # within Wii mode.
@@ -134,8 +138,6 @@ def build_cios(args):
     title.fakesign()
 
     # Write the new cIOS to the specified output path.
-    out_file = open(output_path, "wb")
-    out_file.write(title.dump_wad())
-    out_file.close()
+    output_path.write_bytes(title.dump_wad())
 
-    print("success")
+    print(f"Successfully built cIOS \"{args.cios_ver}\"!")

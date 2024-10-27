@@ -88,7 +88,10 @@ def _print_ticket_info(ticket: libWiiPy.title.Ticket):
         print(f"  Certificate Info: {ticket.signature_issuer} (Unknown)")
     match ticket.common_key_index:
         case 0:
-            key = "Common"
+            if ticket.is_dev:
+                key = "Common (Development)"
+            else:
+                key = "Common (Retail)"
         case 1:
             key = "Korean"
         case 2:
