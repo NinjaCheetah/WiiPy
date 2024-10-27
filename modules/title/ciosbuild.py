@@ -129,7 +129,6 @@ def build_cios(args):
     title_key_common = libWiiPy.title.encrypt_title_key(title_key_dec, 0, title.tmd.title_id)
     title.ticket.title_key_enc = title_key_common
     title.ticket.common_key_index = 0
-    title.tmd.vwii = 0
 
     # Ensure the WAD is fakesigned.
     title.fakesign()
