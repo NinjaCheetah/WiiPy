@@ -1,7 +1,6 @@
 # "modules/title/wad.py" from WiiPy by NinjaCheetah
 # https://github.com/NinjaCheetah/WiiPy
 
-import os
 import pathlib
 from random import randint
 import libWiiPy
@@ -228,6 +227,7 @@ def handle_wad_remove(args):
     title = libWiiPy.title.Title()
     title.load_wad(input_path.read_bytes())
 
+    # TODO: see if this implementation is problematic now
     if args.index is not None:
         # List indices in the title, and ensure that the target content index exists.
         valid_indices = []
@@ -338,7 +338,7 @@ def handle_wad_unpack(args):
         if output_path.is_file():
             raise ValueError("A file already exists with the provided directory name!")
     else:
-        os.mkdir(output_path)
+        output_path.mkdir()
 
     # Step through each component of a WAD and dump it to a file.
     title = libWiiPy.title.Title()

@@ -13,6 +13,7 @@ from modules.title.fakesign import *
 from modules.title.info import *
 from modules.title.iospatcher import *
 from modules.title.nus import *
+from modules.title.tmd import *
 from modules.title.wad import *
 
 wiipy_ver = "1.4.0"
@@ -194,6 +195,25 @@ if __name__ == "__main__":
                                            help="serial number of the console these settings are for")
     setting_gen_parser.add_argument("region", metavar="REGION", type=str,
                                            help="region of the console these settings are for (USA, EUR, JPN, or KOR)")
+
+    # Argument parser for the TMD subcommand.
+    tmd_parser = subparsers.add_parser("tmd", help="edit a TMD file",
+                                       description="edit a TMD file")
+    tmd_subparsers = tmd_parser.add_subparsers(dest="subcommand", required=True)
+    # Remove TMD subcommand.
+    tmd_remove_parser = tmd_subparsers.add_parser("remove", help="remove a content record from a TMD file",
+                                                  description="remove a content record from a TMD file, either by its "
+                                                              "CID or by its index; by default, this will overwrite "
+                                                              "the input file unless an output is specified")
+    tmd_remove_parser.set_defaults(func=handle_tmd_remove)
+    tmd_remove_parser.add_argument("input", metavar="IN", type=str, help="TMD file to remove a content record from")
+    tmd_remove_targets = tmd_remove_parser.add_mutually_exclusive_group(required=True)
+    tmd_remove_targets.add_argument("-i", "--index", metavar="INDEX", type=int,
+                                    help="index of the content record to remove")
+    tmd_remove_targets.add_argument("-c", "--cid", metavar="CID", type=str,
+                                    help="Content ID of the content record to remove")
+    tmd_remove_parser.add_argument("-o", "--output", metavar="OUT", type=str,
+                                   help="file to output the updated TMD to (optional)")
 
     # Argument parser for the U8 subcommand.
     u8_parser = subparsers.add_parser("u8", help="pack/unpack a U8 archive",
