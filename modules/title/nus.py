@@ -146,6 +146,11 @@ def handle_nus_content(args):
     else:
         output_path = pathlib.Path(args.output)
 
+    # Ensure that a version was supplied before downloading, because we need the matching TMD for decryption to work.
+    if decrypt_content is True and version is None:
+        print("You must specify the version that the requested content belongs to for decryption!")
+        return
+
     # Try to download the content, and catch the ValueError libWiiPy will throw if it can't be found.
     print("Downloading content with Content ID " + cid + "...")
     try:
@@ -154,11 +159,6 @@ def handle_nus_content(args):
         raise ValueError("The Title ID or Content ID you specified could not be found!")
 
     if decrypt_content is True:
-        # Ensure that a version was supplied, because we need the matching TMD for decryption to work.
-        if version is None:
-            print("You must specify the version that the requested content belongs to for decryption!")
-            return
-
         output_path = output_path.with_suffix(".app")
         tmd = libWiiPy.title.TMD()
         tmd.load(libWiiPy.title.download_tmd(tid, version))
