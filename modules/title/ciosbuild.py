@@ -98,7 +98,7 @@ def build_cios(args):
         if target_module is not None:
             target_index = int(content.get("tmdmoduleid"), 16)
             # The cIOS map supplies a Content ID to use for each additional module.
-            cid = int(content.get("id")[-2:], 16)
+            cid = int(content.get("id"), 16)
             target_path = modules_path.joinpath(target_module + ".app")
             if not target_path.exists():
                 raise Exception(f"A required module \"{target_module}.app\" could not be found!")
