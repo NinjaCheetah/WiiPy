@@ -1,4 +1,4 @@
-# "modules/title/iospatcher.py" from WiiPy by NinjaCheetah
+# "commands/title/iospatcher.py" from WiiPy by NinjaCheetah
 # https://github.com/NinjaCheetah/WiiPy
 
 import pathlib

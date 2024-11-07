@@ -1,4 +1,4 @@
-# "modules/nand/setting.py" from WiiPy by NinjaCheetah
+# "commands/nand/setting.py" from WiiPy by NinjaCheetah
 # https://github.com/NinjaCheetah/WiiPy
 
 import pathlib

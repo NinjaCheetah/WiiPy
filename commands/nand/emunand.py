@@ -1,4 +1,4 @@
-# "modules/nand/emunand.py" from WiiPy by NinjaCheetah
+# "commands/nand/emunand.py" from WiiPy by NinjaCheetah
 # https://github.com/NinjaCheetah/WiiPy
 
 import pathlib

@@ -4,17 +4,17 @@
 import argparse
 from importlib.metadata import version
 
-from modules.archive.ash import *
-from modules.archive.u8 import *
-from modules.nand.emunand import *
-from modules.nand.setting import *
-from modules.title.ciosbuild import *
-from modules.title.fakesign import *
-from modules.title.info import *
-from modules.title.iospatcher import *
-from modules.title.nus import *
-from modules.title.tmd import *
-from modules.title.wad import *
+from commands.archive.ash import *
+from commands.archive.u8 import *
+from commands.nand.emunand import *
+from commands.nand.setting import *
+from commands.title.ciosbuild import *
+from commands.title.fakesign import *
+from commands.title.info import *
+from commands.title.iospatcher import *
+from commands.title.nus import *
+from commands.title.tmd import *
+from commands.title.wad import *
 
 wiipy_ver = "1.4.0"
 
@@ -64,8 +64,8 @@ if __name__ == "__main__":
     cios_parser.add_argument("output", metavar="OUT", type=str, help="file to output the cIOS to")
     cios_parser.add_argument("-c", "--cios-ver", metavar="CIOS", type=str,
                              help="cIOS version from the map to build", required=True)
-    cios_parser.add_argument("-m", "--modules", metavar="MODULES", type=str,
-                             help="directory to look for cIOS modules in (optional, defaults to current directory)")
+    cios_parser.add_argument("-m", "--commands", metavar="MODULES", type=str,
+                             help="directory to look for cIOS commands in (optional, defaults to current directory)")
     cios_parser.add_argument("-s", "--slot", metavar="SLOT", type=int,
                              help="slot that this cIOS will install to (optional, defaults to 249)", default=249)
     cios_parser.add_argument("-v", "--version", metavar="VERSION", type=int,
@@ -218,12 +218,19 @@ if __name__ == "__main__":
     # Argument parser for the U8 subcommand.
     u8_parser = subparsers.add_parser("u8", help="pack/unpack a U8 archive",
                                       description="pack/unpack a U8 archive")
-    u8_parser.set_defaults(func=handle_u8)
-    u8_group = u8_parser.add_mutually_exclusive_group(required=True)
-    u8_group.add_argument("-p", "--pack", help="pack a directory to a U8 archive", action="store_true")
-    u8_group.add_argument("-u", "--unpack", help="unpack a U8 archive to a directory", action="store_true")
-    u8_parser.add_argument("input", metavar="IN", type=str, help="input file")
-    u8_parser.add_argument("output", metavar="OUT", type=str, help="output file")
+    u8_subparsers = u8_parser.add_subparsers(dest="subcommand", required=True)
+    # Pack U8 subcommand.
+    u8_pack_parser = u8_subparsers.add_parser("pack", help="pack a folder into U8 archive",
+                                              description="pack a folder into U8 archive")
+    u8_pack_parser.set_defaults(func=handle_u8_pack)
+    u8_pack_parser.add_argument("input", metavar="IN", type=str, help="folder to pack")
+    u8_pack_parser.add_argument("output", metavar="OUT", type=str, help="output U8 archive")
+    # Unpack U8 subcommand.
+    u8_unpack_parser = u8_subparsers.add_parser("unpack", help="unpack a U8 archive into a folder",
+                                                description="unpack a U8 archive into a folder")
+    u8_unpack_parser.set_defaults(func=handle_u8_unpack)
+    u8_unpack_parser.add_argument("input", metavar="IN", type=str, help="U8 archive to unpack")
+    u8_unpack_parser.add_argument("output", metavar="OUT", type=str, help="folder to output to")
 
     # Argument parser for the WAD subcommand.
     wad_parser = subparsers.add_parser("wad", help="pack/unpack a WAD file",

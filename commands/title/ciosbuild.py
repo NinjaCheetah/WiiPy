@@ -1,4 +1,4 @@
-# "modules/title/ciosbuild.py" from WiiPy by NinjaCheetah
+# "commands/title/ciosbuild.py" from WiiPy by NinjaCheetah
 # https://github.com/NinjaCheetah/WiiPy
 
 import io
@@ -59,7 +59,7 @@ def build_cios(args):
 
     # We're ready to begin building the cIOS now. Find all the <content> tags that have <patch> tags, and then apply
     # the patches listed in them to the content.
-    print("Patching existing modules...")
+    print("Patching existing commands...")
     for content in target_base.findall("content"):
         patches = content.findall("patch")
         if patches:
@@ -91,8 +91,8 @@ def build_cios(args):
             # Set the content in the title to the newly-patched content, and set the type to normal.
             title.set_content(dec_content, content_index, content_type=libWiiPy.title.ContentType.NORMAL)
 
-    # Next phase of cIOS building is to add the required extra modules.
-    print("Adding required additional modules...")
+    # Next phase of cIOS building is to add the required extra commands.
+    print("Adding required additional commands...")
     for content in target_base.findall("content"):
         target_module = content.get("module")
         if target_module is not None:

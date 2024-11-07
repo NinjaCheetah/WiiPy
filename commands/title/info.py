@@ -1,4 +1,4 @@
-# "modules/title/info.py" from WiiPy by NinjaCheetah
+# "commands/title/info.py" from WiiPy by NinjaCheetah
 # https://github.com/NinjaCheetah/WiiPy
 
 import pathlib

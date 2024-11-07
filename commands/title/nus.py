@@ -1,4 +1,4 @@
-# "modules/title/nus.py" from WiiPy by NinjaCheetah
+# "commands/title/nus.py" from WiiPy by NinjaCheetah
 # https://github.com/NinjaCheetah/WiiPy
 
 import hashlib
