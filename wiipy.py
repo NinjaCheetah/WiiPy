@@ -5,6 +5,7 @@ import argparse
 from importlib.metadata import version
 
 from commands.archive.ash import *
+from commands.archive.theme import *
 from commands.archive.u8 import *
 from commands.nand.emunand import *
 from commands.nand.setting import *
@@ -195,6 +196,20 @@ if __name__ == "__main__":
                                            help="serial number of the console these settings are for")
     setting_gen_parser.add_argument("region", metavar="REGION", type=str,
                                            help="region of the console these settings are for (USA, EUR, JPN, or KOR)")
+
+    # Argument parser for the theme subcommand.
+    theme_parser = subparsers.add_parser("theme", help="apply custom themes to the Wii Menu",
+                                         description="apply custom themes to the Wii Menu")
+    theme_subparsers = theme_parser.add_subparsers(dest="subcommand", required=True)
+    # MYM theme subcommand.
+    theme_mym_parser = theme_subparsers.add_parser("mym", help="apply an MYM theme to the Wii Menu",
+                                                   description="apply an MYM theme to the Wii Menu")
+    theme_mym_parser.set_defaults(func=handle_apply_mym)
+    theme_mym_parser.add_argument("mym", metavar="MYM", type=str, help="MYM theme to apply")
+    theme_mym_parser.add_argument("base", metavar="BASE", type=str,
+                                  help="base Wii Menu assets to apply the theme to (000000xx.app)")
+    theme_mym_parser.add_argument("output", metavar="OUT", type=str,
+                                  help="path to output the finished theme to (<filename>.csm)")
 
     # Argument parser for the TMD subcommand.
     tmd_parser = subparsers.add_parser("tmd", help="edit a TMD file",
