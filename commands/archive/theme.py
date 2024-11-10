@@ -7,7 +7,6 @@ import shutil
 import tempfile
 import zipfile
 import libWiiPy
-import time
 
 
 def handle_apply_mym(args):
@@ -42,15 +41,26 @@ def handle_apply_mym(args):
         base_temp_path = pathlib.Path(tmp_path.joinpath("base_out"))
         # Parse the mym.ini file in the root of the extracted MYM file.
         mym_ini = configparser.ConfigParser()
+        if not mym_tmp_path.joinpath("mym.ini").exists():
+            print("Error: mym.ini could not be found! The provided theme is not valid.")
+            exit(1)
         mym_ini.read(mym_tmp_path.joinpath("mym.ini"))
         # Iterate over every key in the ini file and apply the theme based the source and target of each key.
         for section in mym_ini.sections():
+            # Build the source path by adjusting the path in the ini file.
             source_file = mym_tmp_path
             for piece in mym_ini[section]["source"].replace("\\", "/").split("/"):
                 source_file = source_file.joinpath(piece)
+            # Check that this source file is actually valid, and error out if it isn't.
+            if not source_file.exists():
+                print(f"Error: A source file specified in mym.ini, \"{mym_ini[section]['source']}\", does not exist! "
+                      f"The provided theme is not valid.")
+                exit(1)
+            # Build the target path the same way.
             target_file = base_temp_path
             for piece in mym_ini[section]["file"].replace("\\", "/").split("/"):
                 target_file = target_file.joinpath(piece)
+            # Move the source file into place over the target file.
             shutil.move(source_file, target_file)
         # Repack the now-themed asset archive and write it out.
         output_path.write_bytes(libWiiPy.archive.pack_u8(base_temp_path))
