@@ -60,11 +60,16 @@ def _patch_drive_inquiry(ios_patcher: libWiiPy.title.IOSPatcher) -> int:
 
 def handle_iospatch(args):
     input_path = pathlib.Path(args.input)
+    if args.output is not None:
+        output_path = pathlib.Path(args.output)
+    else:
+        output_path = pathlib.Path(args.input)
+
     if not input_path.exists():
         fatal_error(f"The specified IOS file \"{input_path}\" does not exist!")
 
     title = libWiiPy.title.Title()
-    title.load_wad(open(input_path, "rb").read())
+    title.load_wad(input_path.read_bytes())
 
     tid = title.tmd.title_id
     if tid[:8] != "00000001" or tid[8:] == "00000001" or tid[8:] == "00000002":
@@ -117,14 +122,6 @@ def handle_iospatch(args):
                 ios_patcher.title.content.content_records[ios_patcher.dip_module_index].content_type = 1
 
         ios_patcher.title.fakesign()  # Signature is broken anyway, so fakesign for maximum installation openings
-        if args.output is not None:
-            output_path = pathlib.Path(args.output)
-            output_file = open(output_path, "wb")
-            output_file.write(ios_patcher.title.dump_wad())
-            output_file.close()
-        else:
-            output_file = open(input_path, "wb")
-            output_file.write(ios_patcher.title.dump_wad())
-            output_file.close()
+        output_path.write_bytes(ios_patcher.title.dump_wad())
 
     print("IOS successfully patched!")

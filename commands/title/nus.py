@@ -133,6 +133,7 @@ def handle_nus_content(args):
 
     # Only accepting the 000000xx format because it's the one that would be most commonly known, rather than using the
     # actual integer that the hex Content ID translates to.
+    content_id = None
     try:
         content_id = int.from_bytes(binascii.unhexlify(cid))
     except binascii.Error:
@@ -151,6 +152,7 @@ def handle_nus_content(args):
 
     # Try to download the content, and catch the ValueError libWiiPy will throw if it can't be found.
     print("Downloading content with Content ID " + cid + "...")
+    content_data = None
     try:
         content_data = libWiiPy.title.download_content(tid, content_id)
     except ValueError:
@@ -161,6 +163,7 @@ def handle_nus_content(args):
         tmd = libWiiPy.title.TMD()
         tmd.load(libWiiPy.title.download_tmd(tid, version))
         # Try to get a Ticket for the title, if a common one is available.
+        ticket = None
         try:
             ticket = libWiiPy.title.Ticket()
             ticket.load(libWiiPy.title.download_ticket(tid, wiiu_endpoint=True))
@@ -200,13 +203,12 @@ def handle_nus_tmd(args):
     tid = args.tid
 
     # Check if --version was passed, because it'll be None if it wasn't.
+    version = None
     if args.version is not None:
         try:
             version = int(args.version)
         except ValueError:
             fatal_error("The specified TMD version must be a valid integer!")
-    else:
-        version = None
 
     # Use the supplied output path if one was specified, otherwise generate one using the Title ID. If a version has
     # been specified, append the version to the end of the path as well.
@@ -220,6 +222,7 @@ def handle_nus_tmd(args):
 
     # Try to download the TMD, and catch the ValueError libWiiPy will throw if it can't be found.
     print(f"Downloading TMD for title {tid}...")
+    tmd_data = None
     try:
         tmd_data = libWiiPy.title.download_tmd(tid, version)
     except ValueError:

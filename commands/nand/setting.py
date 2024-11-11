@@ -18,9 +18,9 @@ def handle_setting_decrypt(args):
 
     # Load and decrypt the provided file.
     setting = libWiiPy.nand.SettingTxt()
-    setting.load(open(input_path, "rb").read())
+    setting.load(input_path.read_bytes())
     # Write out the decrypted data.
-    open(output_path, "w").write(setting.dump_decrypted())
+    output_path.write_text(setting.dump_decrypted())
     print("Successfully decrypted setting.txt!")
 
 
@@ -36,9 +36,9 @@ def handle_setting_encrypt(args):
 
     # Load and encrypt the provided file.
     setting = libWiiPy.nand.SettingTxt()
-    setting.load_decrypted(open(input_path, "r").read())
+    setting.load_decrypted(input_path.read_text())
     # Write out the encrypted data.
-    open(output_path, "wb").write(setting.dump())
+    output_path.write_bytes(setting.dump())
     print("Successfully encrypted setting.txt!")
 
 

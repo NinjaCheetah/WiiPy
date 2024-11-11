@@ -45,6 +45,7 @@ def handle_wad_add(args):
         print(f"Using randomly assigned Content ID \"{target_cid:08X}\" since none were provided.")
 
     # Get the type of the new content.
+    target_type = libWiiPy.title.ContentType.NORMAL
     if args.type is not None:
         match str.lower(args.type):
             case "normal":
@@ -55,8 +56,6 @@ def handle_wad_add(args):
                 target_type = libWiiPy.title.ContentType.DLC
             case _:
                 fatal_error(f"The provided content type \"{args.type}\" is not valid!")
-    else:
-        target_type = libWiiPy.title.ContentType.NORMAL
 
     # Call add_content to add our new content with the set parameters.
     title.add_content(content_data, target_cid, target_type)
@@ -70,6 +69,7 @@ def handle_wad_add(args):
 
 def handle_wad_convert(args):
     input_path = pathlib.Path(args.input)
+    target = None
     if args.dev:
         target = "development"
     elif args.retail:
@@ -79,6 +79,7 @@ def handle_wad_convert(args):
     else:
         fatal_error("No valid encryption target was specified!")
 
+    output_path = pathlib.Path(args.output)
     if args.output is None:
         match target:
             case "development":
@@ -89,8 +90,6 @@ def handle_wad_convert(args):
                 output_path = pathlib.Path(input_path.stem + "_vWii" + input_path.suffix)
             case _:
                 fatal_error("No valid encryption target was specified!")
-    else:
-        output_path = pathlib.Path(args.output)
 
     if not input_path.exists():
         fatal_error(f"The specified WAD file \"{input_path}\" does not exist!")
@@ -276,6 +275,7 @@ def handle_wad_set(args):
     content_data = content_path.read_bytes()
 
     # Get the new type of the content, if one was specified.
+    target_type = None
     if args.type is not None:
         match str.lower(args.type):
             case "normal":
@@ -286,8 +286,6 @@ def handle_wad_set(args):
                 target_type = libWiiPy.title.ContentType.DLC
             case _:
                 fatal_error(f"The provided content type \"{args.type}\" is not valid!\"")
-    else:
-        target_type = None
 
     if args.index is not None:
         # If we're replacing based on the index, then make sure the specified index exists.

@@ -18,21 +18,21 @@ def handle_fakesign(args):
 
     if input_path.suffix.lower() == ".tmd":
         tmd = libWiiPy.title.TMD()
-        tmd.load(open(input_path, "rb").read())
+        tmd.load(input_path.read_bytes())
         tmd.fakesign()
-        open(output_path, "wb").write(tmd.dump())
+        output_path.write_bytes(tmd.dump())
         print("TMD fakesigned successfully!")
     elif input_path.suffix.lower() == ".tik":
         tik = libWiiPy.title.Ticket()
-        tik.load(open(input_path, "rb").read())
+        tik.load(input_path.read_bytes())
         tik.fakesign()
-        open(output_path, "wb").write(tik.dump())
+        output_path.write_bytes(tik.dump())
         print("Ticket fakesigned successfully!")
     elif input_path.suffix.lower() == ".wad":
         title = libWiiPy.title.Title()
-        title.load_wad(open(input_path, "rb").read())
+        title.load_wad(input_path.read_bytes())
         title.fakesign()
-        open(output_path, "wb").write(title.dump_wad())
+        output_path.write_bytes(title.dump_wad())
         print("WAD fakesigned successfully!")
     else:
         fatal_error("The provided file does not appear to be a TMD, Ticket, or WAD and cannot be fakesigned!")
