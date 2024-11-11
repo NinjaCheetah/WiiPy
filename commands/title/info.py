@@ -4,6 +4,7 @@
 import pathlib
 import binascii
 import libWiiPy
+from modules.core import fatal_error
 
 
 def _print_tmd_info(tmd: libWiiPy.title.TMD):
@@ -136,7 +137,7 @@ def handle_info(args):
     input_path = pathlib.Path(args.input)
 
     if not input_path.exists():
-        raise FileNotFoundError(input_path)
+        fatal_error(f"The specified input file \"{input_path}\" does not exist!")
 
     if input_path.suffix.lower() == ".tmd":
         tmd = libWiiPy.title.TMD()
@@ -151,4 +152,4 @@ def handle_info(args):
         title.load_wad(open(input_path, "rb").read())
         _print_wad_info(title)
     else:
-        raise TypeError("This does not appear to be a TMD, Ticket, or WAD! No info can be provided.")
+        fatal_error("This does not appear to be a TMD, Ticket, or WAD! No information can be provided.")

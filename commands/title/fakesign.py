@@ -3,6 +3,7 @@
 
 import pathlib
 import libWiiPy
+from modules.core import fatal_error
 
 
 def handle_fakesign(args):
@@ -13,7 +14,7 @@ def handle_fakesign(args):
         output_path = pathlib.Path(args.input)
 
     if not input_path.exists():
-        raise FileNotFoundError(input_path)
+        fatal_error(f"The specified input file \"{input_path}\" does not exist!")
 
     if input_path.suffix.lower() == ".tmd":
         tmd = libWiiPy.title.TMD()
@@ -34,4 +35,4 @@ def handle_fakesign(args):
         open(output_path, "wb").write(title.dump_wad())
         print("WAD fakesigned successfully!")
     else:
-        raise TypeError("This does not appear to be a TMD, Ticket, or WAD! Cannot fakesign.")
+        fatal_error("The provided file does not appear to be a TMD, Ticket, or WAD and cannot be fakesigned!")

@@ -3,6 +3,7 @@
 
 import pathlib
 import libWiiPy
+from modules.core import fatal_error
 
 
 def handle_emunand_title(args):
@@ -17,12 +18,12 @@ def handle_emunand_title(args):
         input_path = pathlib.Path(args.install)
 
         if not input_path.exists():
-            raise FileNotFoundError(input_path)
+            fatal_error("The specified WAD file does not exist!")
 
         if input_path.is_dir():
             wad_files = list(input_path.glob("*.[wW][aA][dD]"))
             if not wad_files:
-                raise FileNotFoundError("No WAD files were found in the provided input directory!")
+                fatal_error("No WAD files were found in the provided input directory!")
             wad_count = 0
             for wad in wad_files:
                 title = libWiiPy.title.Title()
@@ -50,7 +51,7 @@ def handle_emunand_title(args):
             target_tid = input_str
 
         if len(target_tid) != 16:
-            raise ValueError("Invalid Title ID! Title IDs must be 16 characters long.")
+            fatal_error("The provided Title ID is invalid! Title IDs must be 16 characters long.")
 
         emunand.uninstall_title(target_tid)
 

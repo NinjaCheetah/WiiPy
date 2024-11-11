@@ -4,6 +4,7 @@
 import pathlib
 from random import randint
 import libWiiPy
+from modules.core import fatal_error
 
 
 def handle_wad_add(args):
@@ -15,9 +16,9 @@ def handle_wad_add(args):
         output_path = pathlib.Path(args.input)
 
     if not input_path.exists():
-        raise FileNotFoundError(input_path)
+        fatal_error(f"The specified WAD file \"{input_path}\" does not exist!")
     if not content_path.exists():
-        raise FileNotFoundError(content_path)
+        fatal_error(f"The specified content file \"{content_path}\" does not exist!")
 
     title = libWiiPy.title.Title()
     title.load_wad(input_path.read_bytes())
@@ -27,11 +28,11 @@ def handle_wad_add(args):
     # We need to both validate that this is a real CID, and also that it isn't already taken by another content.
     if args.cid is not None:
         if len(args.cid) != 8:
-            raise ValueError("The provided Content ID is invalid!")
+            fatal_error("The specified Content ID is not valid!")
         target_cid = int(args.cid, 16)
         for record in title.content.content_records:
             if target_cid == record.content_id:
-                raise ValueError("The provided Content ID is already being used by this title!")
+                fatal_error("The specified Content ID is already in use by this title!")
         print(f"Using provided Content ID \"{target_cid:08X}\".")
     # If we weren't given a CID, then we need to randomly assign one, and ensure it isn't being used.
     else:
@@ -53,7 +54,7 @@ def handle_wad_add(args):
             case "dlc":
                 target_type = libWiiPy.title.ContentType.DLC
             case _:
-                raise ValueError("The provided content type is invalid!")
+                fatal_error(f"The provided content type \"{args.type}\" is not valid!")
     else:
         target_type = libWiiPy.title.ContentType.NORMAL
 
@@ -76,7 +77,7 @@ def handle_wad_convert(args):
     elif args.vwii:
         target = "vWii"
     else:
-        raise ValueError("No valid target was provided!")
+        fatal_error("No valid encryption target was specified!")
 
     if args.output is None:
         match target:
@@ -87,22 +88,22 @@ def handle_wad_convert(args):
             case "vWii":
                 output_path = pathlib.Path(input_path.stem + "_vWii" + input_path.suffix)
             case _:
-                raise ValueError("No valid target was provided!")
+                fatal_error("No valid encryption target was specified!")
     else:
         output_path = pathlib.Path(args.output)
 
     if not input_path.exists():
-        raise FileNotFoundError(input_path)
+        fatal_error(f"The specified WAD file \"{input_path}\" does not exist!")
 
     title = libWiiPy.title.Title()
     title.load_wad(input_path.read_bytes())
     # First, verify that this WAD isn't already the type we're trying to convert to.
     if title.ticket.is_dev and target == "development":
-        raise ValueError("This is already a development WAD!")
+        fatal_error("This is already a development WAD!")
     elif not title.ticket.is_dev and not title.tmd.vwii and target == "retail":
-        raise ValueError("This is already a retail WAD!")
+        fatal_error("This is already a retail WAD!")
     elif not title.ticket.is_dev and title.tmd.vwii and target == "vWii":
-        raise ValueError("This is already a vWii WAD!")
+        fatal_error("This is already a vWii WAD!")
     # Get the current type to display later.
     if title.ticket.is_dev:
         source = "development"
@@ -143,40 +144,39 @@ def handle_wad_pack(args):
     # Make sure input path both exists and is a directory. Separate checks because this provides more relevant
     # errors than just a NotADirectoryError if the actual issue is that there's nothing at all.
     if not input_path.exists():
-        raise FileNotFoundError(input_path)
+        fatal_error(f"The specified input directory \"{input_path}\" does not exist!")
     if not input_path.is_dir():
-        raise NotADirectoryError(input_path)
+        fatal_error(f"The specified input path \"{input_path}\" is not a directory!")
 
     # Get a list of all files ending in .tmd, and then make sure that that list has *only* 1 entry. More than 1
     # means we can't pack a WAD because we couldn't really tell which TMD is intended for this WAD.
     tmd_list = list(input_path.glob('*.[tT][mM][dD]'))
     if len(tmd_list) > 1:
-        raise FileExistsError("More than one TMD file was found! Only one TMD can be packed into a WAD.")
+        fatal_error("More than one TMD file was found! Only one TMD can be packed into a WAD.")
     elif len(tmd_list) == 0:
-        raise FileNotFoundError("No TMD file found! Cannot pack WAD.")
+        fatal_error("No TMD file was found! Cannot pack WAD.")
     tmd_file = pathlib.Path(tmd_list[0])
 
     # Repeat the same process as above for all .tik files.
     ticket_list = list(input_path.glob('*.[tT][iI][kK]'))
     if len(ticket_list) > 1:
-        raise FileExistsError("More than one Ticket file was found! Only one Ticket can be packed into a WAD.")
+        fatal_error("More than one Ticket file was found! Only one Ticket can be packed into a WAD.")
     elif len(ticket_list) == 0:
-        raise FileNotFoundError("No Ticket file found! Cannot pack WAD.")
+        fatal_error("No Ticket file was found! Cannot pack WAD.")
     ticket_file = pathlib.Path(ticket_list[0])
 
     # And one more time for all .cert files.
     cert_list = list(input_path.glob('*.[cC][eE][rR][tT]'))
     if len(cert_list) > 1:
-        raise FileExistsError("More than one certificate file was found! Only one certificate can be packed into a "
-                              "WAD.")
+        fatal_error("More than one certificate file was found! Only one certificate can be packed into a WAD.")
     elif len(cert_list) == 0:
-        raise FileNotFoundError("No certificate file found! Cannot pack WAD.")
+        fatal_error("No certificate file was found! Cannot pack WAD.")
     cert_file = pathlib.Path(cert_list[0])
 
     # Make sure that there's at least one content to pack.
     content_files = list(input_path.glob("*.[aA][pP][pP]"))
     if not content_files:
-        raise FileNotFoundError("No contents found! Cannot pack WAD.")
+        fatal_error("No content files were found! Cannot pack WAD.")
 
     # Open the output file, and load all the component files that we've now verified we have into a libWiiPy Title()
     # object.
@@ -222,7 +222,7 @@ def handle_wad_remove(args):
         output_path = pathlib.Path(args.input)
 
     if not input_path.exists():
-        raise FileNotFoundError(input_path)
+        fatal_error(f"The specified WAD file \"{input_path}\" does not exist!")
 
     title = libWiiPy.title.Title()
     title.load_wad(input_path.read_bytes())
@@ -234,7 +234,7 @@ def handle_wad_remove(args):
         for record in title.content.content_records:
             valid_indices.append(record.index)
         if args.index not in valid_indices:
-            raise ValueError("The provided content index could not be found in this title!")
+            fatal_error("The specified content index could not be found in this title!")
         title.content.remove_content_by_index(args.index)
         # Auto fakesign because we've edited the title.
         title.fakesign()
@@ -243,14 +243,14 @@ def handle_wad_remove(args):
 
     elif args.cid is not None:
         if len(args.cid) != 8:
-            raise ValueError("The provided Content ID is invalid!")
+            fatal_error("The specified Content ID is not valid!")
         target_cid = int(args.cid, 16)
         # List Contents IDs in the title, and ensure that the target Content ID exists.
         valid_ids = []
         for record in title.content.content_records:
             valid_ids.append(record.content_id)
         if target_cid not in valid_ids:
-            raise ValueError("The provided Content ID could not be found in this title!")
+            fatal_error("The specified Content ID could not be found in this title!")
         title.content.remove_content_by_cid(target_cid)
         # Auto fakesign because we've edited the title.
         title.fakesign()
@@ -267,9 +267,9 @@ def handle_wad_set(args):
         output_path = pathlib.Path(args.input)
 
     if not input_path.exists():
-        raise FileNotFoundError(input_path)
+        fatal_error(f"The specified WAD file \"{input_path}\" does not exist!")
     if not content_path.exists():
-        raise FileNotFoundError(content_path)
+        fatal_error(f"The specified content file \"{content_path}\" does not exist!")
 
     title = libWiiPy.title.Title()
     title.load_wad(input_path.read_bytes())
@@ -285,7 +285,7 @@ def handle_wad_set(args):
             case "dlc":
                 target_type = libWiiPy.title.ContentType.DLC
             case _:
-                raise ValueError("The provided content type is invalid!")
+                fatal_error(f"The provided content type \"{args.type}\" is not valid!\"")
     else:
         target_type = None
 
@@ -295,7 +295,7 @@ def handle_wad_set(args):
         for record in title.content.content_records:
             existing_indices.append(record.index)
         if args.index not in existing_indices:
-            raise ValueError("The provided index could not be found in this title!")
+            fatal_error("The specified index could not be found in this title!")
         if target_type:
             title.set_content(content_data, args.index, content_type=target_type)
         else:
@@ -309,13 +309,13 @@ def handle_wad_set(args):
     elif args.cid is not None:
         # If we're replacing based on the CID, then make sure the specified CID is valid and exists.
         if len(args.cid) != 8:
-            raise ValueError("The provided Content ID is invalid!")
+            fatal_error("The specified Content ID is not valid!")
         target_cid = int(args.cid, 16)
         existing_cids = []
         for record in title.content.content_records:
             existing_cids.append(record.content_id)
         if target_cid not in existing_cids:
-            raise ValueError("The provided Content ID could not be found in this title!")
+            fatal_error("The specified Content ID could not be found in this title!")
         target_index = title.content.get_index_from_cid(target_cid)
         if target_type:
             title.set_content(content_data, target_index, content_type=target_type)
@@ -332,11 +332,11 @@ def handle_wad_unpack(args):
     output_path = pathlib.Path(args.output)
 
     if not input_path.exists():
-        raise FileNotFoundError(input_path)
+        fatal_error(f"The specified WAD file \"{input_path}\" does not exist!")
     # Check if the output path already exists, and if it does, ensure that it is both a directory and empty.
     if output_path.exists():
         if output_path.is_file():
-            raise ValueError("A file already exists with the provided directory name!")
+            fatal_error(f"A file already exists with the provided output directory name!")
     else:
         output_path.mkdir()
 

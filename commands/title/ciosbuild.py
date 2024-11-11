@@ -6,6 +6,7 @@ import os
 import xml.etree.ElementTree as ET
 import pathlib
 import libWiiPy
+from modules.core import fatal_error
 
 
 def build_cios(args):
@@ -18,11 +19,11 @@ def build_cios(args):
     output_path = pathlib.Path(args.output)
 
     if not base_path.exists():
-        raise FileNotFoundError(base_path)
+        fatal_error(f"The specified base IOS file \"{base_path}\" does not exist!")
     if not map_path.exists():
-        raise FileNotFoundError(map_path)
+        fatal_error(f"The specified cIOS map file \"{map_path}\" does not exist!")
     if not modules_path.exists():
-        raise FileNotFoundError(modules_path)
+        fatal_error(f"The specified cIOS modules directory \"{modules_path}\" does not exist!")
 
     title = libWiiPy.title.Title()
     title.load_wad(open(base_path, 'rb').read())
@@ -39,7 +40,7 @@ def build_cios(args):
             target_cios = child
             break
     if target_cios is None:
-        raise ValueError("The target cIOS could not be found in the provided map!")
+        fatal_error(f"The target cIOS \"{args.cios_ver}\" could not be found in the provided map!")
 
     # Iterate over all bases in the target cIOS to find a base that matches the provided WAD. If one is found, ensure
     # that the version of the base in the map matches the version of the IOS WAD.
@@ -51,15 +52,16 @@ def build_cios(args):
             target_base = child
             break
     if target_base is None:
-        raise ValueError("The provided base IOS doesn't match any bases found in the provided map!")
+        fatal_error(f"The provided base (IOS{provided_base}) doesn't match any bases found in the provided map!")
     base_version = int(target_base.get("version"))
     if title.tmd.title_version != base_version:
-        raise ValueError("The provided base IOS does not match the required version for this base!")
+        fatal_error(f"The provided base (IOS{provided_base} v{title.tmd.title_version}) doesn't match the required "
+                    f"version (v{base_version})!")
     print(f"Building cIOS \"{args.cios_ver}\" from base IOS{target_base.get('ios')} v{base_version}...")
 
     # We're ready to begin building the cIOS now. Find all the <content> tags that have <patch> tags, and then apply
     # the patches listed in them to the content.
-    print("Patching existing commands...")
+    print("Patching existing modules...")
     for content in target_base.findall("content"):
         patches = content.findall("patch")
         if patches:
@@ -85,14 +87,14 @@ def build_cios(args):
                         content_data.seek(offset)
                         content_data.write(new_data)
                     else:
-                        raise Exception("An error occurred while patching! Please make sure your base IOS is valid.")
+                        fatal_error("An error occurred while patching! Please make sure your base IOS is valid.")
                 content_data.seek(0x0)
                 dec_content = content_data.read()
             # Set the content in the title to the newly-patched content, and set the type to normal.
             title.set_content(dec_content, content_index, content_type=libWiiPy.title.ContentType.NORMAL)
 
-    # Next phase of cIOS building is to add the required extra commands.
-    print("Adding required additional commands...")
+    # Next phase of cIOS building is to add the required extra modules.
+    print("Adding required additional modules...")
     for content in target_base.findall("content"):
         target_module = content.get("module")
         if target_module is not None:
@@ -101,7 +103,7 @@ def build_cios(args):
             cid = int(content.get("id"), 16)
             target_path = modules_path.joinpath(target_module + ".app")
             if not target_path.exists():
-                raise Exception(f"A required module \"{target_module}.app\" could not be found!")
+                fatal_error(f"A required module \"{target_module}\" could not be found!")
             # Check where this module belongs. If it's -1, add it to the end. If it's any other value, this module needs
             # to go at the index specified.
             new_module = target_path.read_bytes()
@@ -120,11 +122,11 @@ def build_cios(args):
         tid = title.tmd.title_id[:-2] + f"{slot:02X}"
         title.set_title_id(tid)
     else:
-        raise ValueError(f"The provided slot \"{slot}\" is not valid!")
+        fatal_error(f"The specified slot \"{slot}\" is not valid!")
     try:
         title.set_title_version(args.version)
     except ValueError:
-        raise ValueError(f"The provided version \"{args.version}\" is not valid!")
+        fatal_error(f"The specified version \"{args.version}\" is not valid!")
     print(f"Set cIOS slot to \"{slot}\" and cIOS version to \"{args.version}\"!")
 
     # If this is a vWii cIOS, then we need to re-encrypt it with the Wii Common key so that it's installable from

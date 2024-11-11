@@ -5,6 +5,7 @@ import hashlib
 import pathlib
 import binascii
 import libWiiPy
+from modules.core import fatal_error
 
 
 def handle_nus_title(args):
@@ -23,8 +24,7 @@ def handle_nus_title(args):
         try:
             title_version = int(args.version)
         except ValueError:
-            print("Enter a valid integer for the Title Version.")
-            return
+            fatal_error("The specified Title Version must be a valid integer!")
 
     # If --wad was passed, check to make sure the path is okay.
     if args.wad is not None:
@@ -37,7 +37,7 @@ def handle_nus_title(args):
         output_dir = pathlib.Path(args.output)
         if output_dir.exists():
             if output_dir.is_file():
-                raise ValueError("A file already exists with the provided directory name!")
+                fatal_error("A file already exists with the provided directory name!")
         else:
             output_dir.mkdir()
 
@@ -73,8 +73,7 @@ def handle_nus_title(args):
         # ticket so that they aren't attempted later.
         print("  - No Ticket is available!")
         if wad_file is not None and output_dir is None:
-            print("--wad was passed, but this title cannot be packed into a WAD!")
-            return
+            fatal_error("--wad was passed, but this title has no common ticket and cannot be packed into a WAD!")
 
     # Load the content records from the TMD, and begin iterating over the records.
     title.load_content_records()
@@ -137,7 +136,7 @@ def handle_nus_content(args):
     try:
         content_id = int.from_bytes(binascii.unhexlify(cid))
     except binascii.Error:
-        raise ValueError("Invalid Content ID! Content ID must be in format \"000000xx\"!")
+        fatal_error("The provided Content ID is invalid! The Content ID must be in the format \"000000xx\"!")
 
     # Use the supplied output path if one was specified, otherwise generate one using the Content ID.
     if args.output is None:
@@ -148,15 +147,14 @@ def handle_nus_content(args):
 
     # Ensure that a version was supplied before downloading, because we need the matching TMD for decryption to work.
     if decrypt_content is True and version is None:
-        print("You must specify the version that the requested content belongs to for decryption!")
-        return
+        fatal_error("You must specify the version that the requested content belongs to for decryption!")
 
     # Try to download the content, and catch the ValueError libWiiPy will throw if it can't be found.
     print("Downloading content with Content ID " + cid + "...")
     try:
         content_data = libWiiPy.title.download_content(tid, content_id)
     except ValueError:
-        raise ValueError("The Title ID or Content ID you specified could not be found!")
+        fatal_error("The specified Title ID or Content ID could not be found!")
 
     if decrypt_content is True:
         output_path = output_path.with_suffix(".app")
@@ -167,8 +165,7 @@ def handle_nus_content(args):
             ticket = libWiiPy.title.Ticket()
             ticket.load(libWiiPy.title.download_ticket(tid, wiiu_endpoint=True))
         except ValueError:
-            print("No Ticket is available! Content cannot be decrypted!")
-            return
+            fatal_error("No Ticket is available! Content cannot be decrypted.")
 
         content_hash = 'gggggggggggggggggggggggggggggggggggggggg'
         content_size = 0
@@ -182,17 +179,16 @@ def handle_nus_content(args):
         # If the default hash never changed, then a content record matching the downloaded content couldn't be found,
         # which most likely means that the wrong version was specified.
         if content_hash == 'gggggggggggggggggggggggggggggggggggggggg':
-            print("Content was not found in the TMD from the specified version! Content cannot be decrypted!")
-            return
+            fatal_error("Content was not found in the TMD for the specified version! Content cannot be decrypted.")
 
         # Manually decrypt the content and verify its hash, which is what libWiiPy's get_content() methods do. We just
         # can't really use that here because that require setting up a lot more of the title than is necessary.
         content_dec = libWiiPy.title.decrypt_content(content_data, ticket.get_title_key(), content_index, content_size)
         content_dec_hash = hashlib.sha1(content_dec).hexdigest()
         if content_hash != content_dec_hash:
-            raise ValueError("The decrypted content provided does not match the record at the provided index. \n"
-                             "Expected hash is: {}\n".format(content_hash) +
-                             "Actual hash is: {}".format(content_dec_hash))
+            fatal_error("The decrypted content provided does not match the record at the provided index. \n"
+                        "Expected hash is: {}\n".format(content_hash) +
+                        "Actual hash is: {}".format(content_dec_hash))
         output_path.write_bytes(content_dec)
     else:
         output_path.write_bytes(content_data)
@@ -208,7 +204,7 @@ def handle_nus_tmd(args):
         try:
             version = int(args.version)
         except ValueError:
-            raise ValueError("Enter a valid integer for the TMD Version.")
+            fatal_error("The specified TMD version must be a valid integer!")
     else:
         version = None
 
@@ -227,7 +223,7 @@ def handle_nus_tmd(args):
     try:
         tmd_data = libWiiPy.title.download_tmd(tid, version)
     except ValueError:
-        raise ValueError("The Title ID or version you specified could not be found!")
+        fatal_error("The specified Title ID or version could not be found!")
 
     output_path.write_bytes(tmd_data)
 

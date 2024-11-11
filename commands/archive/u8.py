@@ -3,6 +3,7 @@
 
 import pathlib
 import libWiiPy
+from modules.core import fatal_error
 
 
 def handle_u8_pack(args):
@@ -12,8 +13,7 @@ def handle_u8_pack(args):
     try:
         u8_data = libWiiPy.archive.pack_u8(input_path)
     except ValueError:
-        print("Error: Specified input file/folder does not exist!")
-        return
+        fatal_error(f"The specified input file/folder \"{input_path}\" does not exist!")
 
     out_file = open(output_path, "wb")
     out_file.write(u8_data)
@@ -27,7 +27,7 @@ def handle_u8_unpack(args):
     output_path = pathlib.Path(args.output)
 
     if not input_path.exists():
-        raise FileNotFoundError(args.input)
+        fatal_error(f"The specified input file \"{input_path}\" does not exist!")
 
     u8_data = open(input_path, "rb").read()
 

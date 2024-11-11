@@ -65,7 +65,7 @@ if __name__ == "__main__":
     cios_parser.add_argument("output", metavar="OUT", type=str, help="file to output the cIOS to")
     cios_parser.add_argument("-c", "--cios-ver", metavar="CIOS", type=str,
                              help="cIOS version from the map to build", required=True)
-    cios_parser.add_argument("-m", "--commands", metavar="MODULES", type=str,
+    cios_parser.add_argument("-m", "--modules", metavar="MODULES", type=str,
                              help="directory to look for cIOS commands in (optional, defaults to current directory)")
     cios_parser.add_argument("-s", "--slot", metavar="SLOT", type=int,
                              help="slot that this cIOS will install to (optional, defaults to 249)", default=249)

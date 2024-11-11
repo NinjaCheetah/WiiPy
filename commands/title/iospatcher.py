@@ -3,6 +3,7 @@
 
 import pathlib
 import libWiiPy
+from modules.core import fatal_error
 
 
 def _patch_fakesigning(ios_patcher: libWiiPy.title.IOSPatcher) -> int:
@@ -60,14 +61,14 @@ def _patch_drive_inquiry(ios_patcher: libWiiPy.title.IOSPatcher) -> int:
 def handle_iospatch(args):
     input_path = pathlib.Path(args.input)
     if not input_path.exists():
-        raise FileNotFoundError(input_path)
+        fatal_error(f"The specified IOS file \"{input_path}\" does not exist!")
 
     title = libWiiPy.title.Title()
     title.load_wad(open(input_path, "rb").read())
 
     tid = title.tmd.title_id
     if tid[:8] != "00000001" or tid[8:] == "00000001" or tid[8:] == "00000002":
-        raise ValueError("This WAD does not appear to contain an IOS! Patching cannot continue.")
+        fatal_error(f"The provided WAD does not appear to contain an IOS! No patches can be applied.")
 
     patch_count = 0
 
@@ -105,8 +106,8 @@ def handle_iospatch(args):
     print(f"\nTotal patches applied: {patch_count}")
 
     if patch_count == 0 and args.version is None and args.slot is None:
-        raise ValueError("No patches were applied! Please select patches to apply, and ensure that selected patches are"
-                         " compatible with this IOS.")
+        fatal_error("No patches were applied! Please specify patches to apply, and ensure that selected patches are "
+                    "compatible with this IOS.")
 
     if patch_count > 0 or args.version is not None or args.slot is not None:
         # Set patched content to non-shared if that argument was passed.

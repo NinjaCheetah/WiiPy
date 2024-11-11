@@ -3,6 +3,7 @@
 
 import pathlib
 import libWiiPy
+from modules.core import fatal_error
 
 
 def handle_ash_compress(args):
@@ -21,7 +22,7 @@ def handle_ash_decompress(args):
     dist_tree_bits = args.dist_bits
 
     if not input_path.exists():
-        raise FileNotFoundError(input_path)
+        fatal_error(f"The specified ASH file \"{input_path}\" does not exist!")
 
     ash_data = input_path.read_bytes()
     # Decompress ASH file using the provided symbol/distance tree widths.

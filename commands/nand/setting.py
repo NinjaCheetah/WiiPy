@@ -3,6 +3,7 @@
 
 import pathlib
 import libWiiPy
+from modules.core import fatal_error
 
 
 def handle_setting_decrypt(args):
@@ -13,7 +14,7 @@ def handle_setting_decrypt(args):
         output_path = pathlib.Path(input_path.stem + "_dec" + input_path.suffix)
 
     if not input_path.exists():
-        raise FileNotFoundError(input_path)
+        fatal_error("The specified setting file does not exist!")
 
     # Load and decrypt the provided file.
     setting = libWiiPy.nand.SettingTxt()
@@ -31,7 +32,7 @@ def handle_setting_encrypt(args):
         output_path = pathlib.Path("setting.txt")
 
     if not input_path.exists():
-        raise FileNotFoundError(input_path)
+        fatal_error("The specified setting file does not exist!")
 
     # Load and encrypt the provided file.
     setting = libWiiPy.nand.SettingTxt()
@@ -44,11 +45,11 @@ def handle_setting_encrypt(args):
 def handle_setting_gen(args):
     # Validate the provided SN. It should be 2 or 3 letters followed by 9 numbers.
     if len(args.serno) != 11 and len(args.serno) != 12:
-        raise ValueError("The provided Serial Number is not valid!")
+        fatal_error("The provided Serial Number is not valid!")
     try:
         int(args.serno[-9:])
     except ValueError:
-        raise ValueError("The provided Serial Number is not valid!")
+        fatal_error("The provided Serial Number is not valid!")
     prefix = args.serno[:-9]
     # Detect the console revision based on the SN.
     match prefix[0].upper():
@@ -64,11 +65,13 @@ def handle_setting_gen(args):
     # of 11 characters, while other regions have a three-letter prefix for a total length of 12 characters.
     valid_regions = ["USA", "EUR", "JPN", "KOR"]
     if args.region not in valid_regions:
-        raise ValueError("The provided region is not valid!")
+        fatal_error(f"The provided region \"{args.region}\" is not valid!")
     if len(prefix) == 2 and args.region != "USA":
-        raise ValueError("The provided region does not match the provided Serial Number!")
+        fatal_error(f"The provided region \"{args.region}\" does not match the provided Serial Number "
+                    f"\"{args.serno}\"!\"")
     elif len(prefix) == 3 and args.region == "USA":
-        raise ValueError("The provided region does not match the provided Serial Number!")
+        fatal_error(f"The provided region \"{args.region}\" does not match the provided Serial Number "
+                    f"\"{args.serno}\"!\"")
     # Get the values for VIDEO and GAME.
     video = ""
     game = ""
