@@ -1,9 +1,9 @@
 CC=python -m nuitka
 
-linux:
+all:
 	$(CC) --show-progress --assume-yes-for-downloads --onefile wiipy.py --onefile-tempdir-spec="{CACHE_DIR}/NinjaCheetah/WiiPy" -o wiipy
 
-linux-install:
+install:
 	install wiipy /usr/bin/
 
 clean:

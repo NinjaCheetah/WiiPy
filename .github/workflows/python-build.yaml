@@ -1,5 +1,4 @@
-# This workflow will install Python dependencies, run tests and lint with a single version of Python
-# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-python
+# This workflow will install Python dependencies and then build WiiPy for all platforms
 
 name: Python application
 
@@ -30,8 +29,7 @@ jobs:
         python -m pip install --upgrade pip
         pip install -r requirements.txt
     - name: Build Application
-      run: |
-        python -m nuitka --show-progress --assume-yes-for-downloads --onefile wiipy.py --onefile-tempdir-spec="{CACHE_DIR}/NinjaCheetah/WiiPy" -o wiipy
+      run: make all
     - name: Prepare Package for Upload
       run: |
         mv wiipy ~/wiipy
@@ -58,8 +56,7 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
       - name: Build Application
-        run: |
-          python -m nuitka --show-progress --assume-yes-for-downloads --onefile wiipy.py --onefile-tempdir-spec="{CACHE_DIR}/NinjaCheetah/WiiPy" -o wiipy
+        run: make all
       - name: Prepare Package for Upload
         run: |
           mv wiipy ~/wiipy
@@ -88,8 +85,7 @@ jobs:
         python -m pip install --upgrade pip
         pip install -r requirements.txt
     - name: Build Application
-      run: |
-        python -m nuitka --show-progress --assume-yes-for-downloads --onefile wiipy.py --onefile-tempdir-spec="{CACHE_DIR}/NinjaCheetah/WiiPy"
+      run: .\Build.ps1
     - name: Upload Application
       uses: actions/upload-artifact@v4.3.0
       with:

@@ -18,7 +18,7 @@ pip install -r requirements.txt
 ## Usage
 Basic usage for WiiPy is very simple.
 ```shell
-python3 wiipy.py <subcommand>
+python3 wiipy.py <command>
 ```
 You can use `--help` to see a list of all commands, or use `<command> --help` to see usage instructions for that command. This also applies to subcommands, with the syntax `<command> <subcommand> --help`.
 
@@ -26,24 +26,27 @@ Available subcommands will expand as support for more features are added into li
 
 
 ## Compiling
-If you'd like to compile WiiPy from Python into something a little more native, you can use one of the following commands. Make sure you've installed Nuitka first (it's included in `requirements.txt`).
-```shell
-python -m nuitka --show-progress --assume-yes-for-downloads --onefile wiipy.py
-```
-On macOS and Linux, this will give you a binary named `wiipy.bin` in the same directory as the Python file. On Windows, you'll get a binary named `wiipy.exe` instead.
+If you'd like to compile WiiPy from Python into something a little more native, you can use one of the following commands. Make sure that you're in your venv, and that you've installed Nuitka first (it's included in `requirements.txt`).
 
-### For Linux Users:
-A Makefile has been included to both build and install WiiPy on Linux. This will install `wiipy` to `/usr/bin/`.
 
-First, use make to build WiiPy (this automates the step above):
+### Linux and macOS
+A Makefile is available to both build and install WiiPy on Linux and macOS. This will give you an executable named `wiipy` in the root of the project directory.
 ```shell
-make linux
+make all
 ```
 
-Then, run the install command with `sudo` (or your favorite alternative):
+Optionally, you can install WiiPy so that it's available system-wide. This will install it into `/usr/bin/`.
 ```shell
-sudo make linux-install
+sudo make install
 ```
+
+
+### Windows
+On Windows, you can use the PowerShell script `Build.ps1` in place of the Makefile. This will give you an executable mamed `wiipy.exe` in the root of the project directory.
+```shell
+.\Build.ps1
+```
+
 
 ### A Note About Scripts
 WiiPy's source includes a directory named `scripts`, which is currently where miscellaneous libWiiPy-based scripts live. Note that they are not part of WiiPy releases, and are not tested the same way the WiiPy is. They are simply here for those who may find them useful.
