@@ -10,7 +10,10 @@ from modules.core import fatal_error
 def _print_tmd_info(tmd: libWiiPy.title.TMD):
     # Get all important keys from the TMD and print them out nicely.
     print("Title Info")
-    print(f"  Title ID: {tmd.title_id}")
+    try:
+        print(f"  Title ID: {tmd.title_id.upper()} ({str(bytes.fromhex(tmd.title_id[8:]).decode()).upper()})")
+    except UnicodeDecodeError:
+        print(f"  Title ID: {tmd.title_id.upper()}")
     # This type of version number really only applies to the System Menu and IOS.
     if tmd.title_id[:8] == "00000001":
         print(f"  Title Version: {tmd.title_version} ({tmd.title_version_converted})")
@@ -21,7 +24,7 @@ def _print_tmd_info(tmd: libWiiPy.title.TMD):
     if tmd.ios_tid == "0000000000000000":
         print(f"  Required IOS: N/A")
     else:
-        print(f"  Required IOS: IOS{int(tmd.ios_tid[-2:], 16)} ({tmd.ios_tid})")
+        print(f"  Required IOS: IOS{int(tmd.ios_tid[-2:], 16)} ({tmd.ios_tid.upper()})")
     if tmd.signature_issuer.find("CP00000004") != -1:
         print(f"  Certificate: CP00000004 (Retail)")
         print(f"  Certificate Issuer: Root-CA00000001 (Retail)")
@@ -45,7 +48,7 @@ def _print_tmd_info(tmd: libWiiPy.title.TMD):
                 region = "KOR"
             case _:
                 region = "None"
-    elif tmd.title_id[:8] == "00000001":
+    elif tmd.get_title_type() == "System":
         region = "None"
     else:
         region = tmd.get_title_region()
@@ -71,7 +74,11 @@ def _print_tmd_info(tmd: libWiiPy.title.TMD):
 def _print_ticket_info(ticket: libWiiPy.title.Ticket):
     # Get all important keys from the TMD and print them out nicely.
     print(f"Ticket Info")
-    print(f"  Title ID: {ticket.title_id.decode()}")
+    try:
+        print(f"  Title ID: {ticket.title_id.decode().upper()} "
+              f"({str(bytes.fromhex(ticket.title_id.decode()[8:]).decode()).upper()})")
+    except UnicodeDecodeError:
+        print(f"  Title ID: {ticket.title_id.decode().upper()}")
     # This type of version number really only applies to the System Menu and IOS.
     if ticket.title_id.decode()[:8] == "00000001":
         print(f"  Title Version: {ticket.title_version} "

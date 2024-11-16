@@ -286,6 +286,21 @@ if __name__ == "__main__":
                                           "installed from Wii U mode if a Wii U mode WAD installer is created")
     wad_convert_parser.add_argument("-o", "--output", metavar="OUT", type=str,
                                     help="file to output the new WAD to (optional, defaults to '<old_name>_<key>.wad')")
+    # Edit WAD subcommand.
+    wad_edit_parser = wad_subparsers.add_parser("edit", help="edit the properties of a WAD file",
+                                                description="edit the properties of a WAD file; by default, this will "
+                                                            "overwrite the input file unless an output is specified")
+    wad_edit_parser.set_defaults(func=handle_wad_edit)
+    wad_edit_parser.add_argument("input", metavar="IN", type=str, help="WAD file to edit")
+    wad_edit_parser.add_argument("--tid", metavar="TID", type=str,
+                                 help="a new Title ID for this WAD (formatted as 4 ASCII characters)")
+    wad_edit_parser.add_argument("--ios", metavar="IOS", type=str,
+                                 help="a new IOS version for this WAD (formatted as the decimal IOS version, eg. 58)")
+    wad_edit_parser.add_argument("--type", metavar="TYPE", type=str,
+                                 help="a new title type for this WAD (valid options: System, Channel, SystemChannel, "
+                                      "GameChannel, DLC, HiddenChannel)")
+    wad_edit_parser.add_argument("-o", "--output", metavar="OUT", type=str,
+                                 help="file to output the updated WAD to (optional)")
     # Pack WAD subcommand.
     wad_pack_parser = wad_subparsers.add_parser("pack", help="pack a directory to a WAD file",
                                                  description="pack a directory to a WAD file")
