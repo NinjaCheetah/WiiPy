@@ -4,6 +4,40 @@
 import pathlib
 import libWiiPy
 from modules.core import fatal_error
+from modules.title import tmd_edit_ios, tmd_edit_tid, tmd_edit_type
+
+
+def handle_tmd_edit(args):
+    input_path = pathlib.Path(args.input)
+    if args.output is not None:
+        output_path = pathlib.Path(args.output)
+    else:
+        output_path = pathlib.Path(args.input)
+
+    tmd = libWiiPy.title.TMD()
+    tmd.load(input_path.read_bytes())
+
+    # State variable to make sure that changes are made.
+    edits_made = False
+    # Go over every possible change, and apply them if they were specified.
+    if args.tid is not None:
+        tmd = tmd_edit_tid(tmd, args.tid)
+        edits_made = True
+    if args.ios is not None:
+        tmd = tmd_edit_ios(tmd, args.ios)
+        edits_made = True
+    if args.type is not None:
+        tmd = tmd_edit_type(tmd, args.type)
+        edits_made = True
+
+    if not edits_made:
+        fatal_error("You must specify at least one change to make!")
+
+    # Fakesign the title since any changes have already invalidated the signature.
+    tmd.fakesign()
+    output_path.write_bytes(tmd.dump())
+
+    print("Successfully edited TMD file!")
 
 
 def handle_tmd_remove(args):

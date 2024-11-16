@@ -5,7 +5,7 @@ import argparse
 from importlib.metadata import version
 
 from commands.archive.ash import *
-from commands.archive.theme import *
+#from commands.archive.theme import *
 from commands.archive.u8 import *
 from commands.nand.emunand import *
 from commands.nand.setting import *
@@ -197,24 +197,39 @@ if __name__ == "__main__":
     setting_gen_parser.add_argument("region", metavar="REGION", type=str,
                                            help="region of the console these settings are for (USA, EUR, JPN, or KOR)")
 
-    # Argument parser for the theme subcommand.
-    theme_parser = subparsers.add_parser("theme", help="apply custom themes to the Wii Menu",
-                                         description="apply custom themes to the Wii Menu")
-    theme_subparsers = theme_parser.add_subparsers(dest="subcommand", required=True)
-    # MYM theme subcommand.
-    theme_mym_parser = theme_subparsers.add_parser("mym", help="apply an MYM theme to the Wii Menu",
-                                                   description="apply an MYM theme to the Wii Menu")
-    theme_mym_parser.set_defaults(func=handle_apply_mym)
-    theme_mym_parser.add_argument("mym", metavar="MYM", type=str, help="MYM theme to apply")
-    theme_mym_parser.add_argument("base", metavar="BASE", type=str,
-                                  help="base Wii Menu assets to apply the theme to (000000xx.app)")
-    theme_mym_parser.add_argument("output", metavar="OUT", type=str,
-                                  help="path to output the finished theme to (<filename>.csm)")
+    # # Argument parser for the theme subcommand.
+    # theme_parser = subparsers.add_parser("theme", help="apply custom themes to the Wii Menu",
+    #                                      description="apply custom themes to the Wii Menu")
+    # theme_subparsers = theme_parser.add_subparsers(dest="subcommand", required=True)
+    # # MYM theme subcommand.
+    # theme_mym_parser = theme_subparsers.add_parser("mym", help="apply an MYM theme to the Wii Menu",
+    #                                                description="apply an MYM theme to the Wii Menu")
+    # theme_mym_parser.set_defaults(func=handle_apply_mym)
+    # theme_mym_parser.add_argument("mym", metavar="MYM", type=str, help="MYM theme to apply")
+    # theme_mym_parser.add_argument("base", metavar="BASE", type=str,
+    #                               help="base Wii Menu assets to apply the theme to (000000xx.app)")
+    # theme_mym_parser.add_argument("output", metavar="OUT", type=str,
+    #                               help="path to output the finished theme to (<filename>.csm)")
 
     # Argument parser for the TMD subcommand.
     tmd_parser = subparsers.add_parser("tmd", help="edit a TMD file",
                                        description="edit a TMD file")
     tmd_subparsers = tmd_parser.add_subparsers(dest="subcommand", required=True)
+    # Edit TMD subcommand.
+    tmd_edit_parser = tmd_subparsers.add_parser("edit", help="edit the properties of a TMD file",
+                                                description="edit the properties of a TMD file; by default, this will "
+                                                            "overwrite the input file unless an output is specified")
+    tmd_edit_parser.set_defaults(func=handle_tmd_edit)
+    tmd_edit_parser.add_argument("input", metavar="IN", type=str, help="TMD file to edit")
+    tmd_edit_parser.add_argument("--tid", metavar="TID", type=str,
+                                 help="a new Title ID for this title (formatted as 4 ASCII characters)")
+    tmd_edit_parser.add_argument("--ios", metavar="IOS", type=str,
+                                 help="a new IOS version for this title (formatted as the decimal IOS version, eg. 58)")
+    tmd_edit_parser.add_argument("--type", metavar="TYPE", type=str,
+                                 help="a new type for this title (valid options: System, Channel, SystemChannel, "
+                                      "GameChannel, DLC, HiddenChannel)")
+    tmd_edit_parser.add_argument("-o", "--output", metavar="OUT", type=str,
+                                 help="file to output the updated TMD to (optional)")
     # Remove TMD subcommand.
     tmd_remove_parser = tmd_subparsers.add_parser("remove", help="remove a content record from a TMD file",
                                                   description="remove a content record from a TMD file, either by its "
@@ -248,8 +263,8 @@ if __name__ == "__main__":
     u8_unpack_parser.add_argument("output", metavar="OUT", type=str, help="folder to output to")
 
     # Argument parser for the WAD subcommand.
-    wad_parser = subparsers.add_parser("wad", help="pack/unpack a WAD file",
-                                       description="pack/unpack a WAD file")
+    wad_parser = subparsers.add_parser("wad", help="pack/unpack/edit a WAD file",
+                                       description="pack/unpack/edit a WAD file")
     wad_subparsers = wad_parser.add_subparsers(dest="subcommand", required=True)
     # Add WAD subcommand.
     wad_add_parser = wad_subparsers.add_parser("add", help="add decrypted content to a WAD file",

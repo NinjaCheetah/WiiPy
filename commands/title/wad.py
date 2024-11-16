@@ -1,12 +1,11 @@
 # "commands/title/wad.py" from WiiPy by NinjaCheetah
 # https://github.com/NinjaCheetah/WiiPy
 
-import binascii
 import pathlib
 from random import randint
 import libWiiPy
-
 from modules.core import fatal_error
+from modules.title import tmd_edit_ios, tmd_edit_tid, tmd_edit_type
 
 
 def handle_wad_add(args):
@@ -136,6 +135,39 @@ def handle_wad_convert(args):
     title.fakesign()
     output_path.write_bytes(title.dump_wad())
     print(f"Successfully converted {source} WAD to {target} WAD \"{output_path.name}\"!")
+
+
+def handle_wad_edit(args):
+    input_path = pathlib.Path(args.input)
+    if args.output is not None:
+        output_path = pathlib.Path(args.output)
+    else:
+        output_path = pathlib.Path(args.input)
+
+    title = libWiiPy.title.Title()
+    title.load_wad(input_path.read_bytes())
+
+    # State variable to make sure that changes are made.
+    edits_made = False
+    # Go over every possible change, and apply them if they were specified.
+    if args.tid is not None:
+        title.tmd = tmd_edit_tid(title.tmd, args.tid)
+        edits_made = True
+    if args.ios is not None:
+        title.tmd = tmd_edit_ios(title.tmd, args.ios)
+        edits_made = True
+    if args.type is not None:
+        title.tmd = tmd_edit_type(title.tmd, args.type)
+        edits_made = True
+
+    if not edits_made:
+        fatal_error("You must specify at least one change to make!")
+
+    # Fakesign the title since any changes have already invalidated the signature.
+    title.fakesign()
+    output_path.write_bytes(title.dump_wad())
+
+    print("Successfully edited WAD file!")
 
 
 def handle_wad_pack(args):
@@ -368,75 +400,3 @@ def handle_wad_unpack(args):
         output_path.joinpath(content_file_name).write_bytes(title.get_content_by_index(content_file, skip_hash))
 
     print("WAD file unpacked!")
-
-
-def handle_wad_edit(args):
-    input_path = pathlib.Path(args.input)
-    if args.output is not None:
-        output_path = pathlib.Path(args.output)
-    else:
-        output_path = pathlib.Path(args.input)
-
-    title = libWiiPy.title.Title()
-    title.load_wad(input_path.read_bytes())
-
-    # State variable to make sure that changes are made.
-    edits_made = False
-    # Go over every possible change, and apply them if they were specified.
-    if args.tid is not None:
-        # Setting a new TID, only changing TID low since this expects a 4 character ASCII input.
-        new_tid = args.tid
-        if len(new_tid) != 4:
-            fatal_error(f"The specified Title ID is not valid! The new Title ID should be 4 characters long.")
-        if not new_tid.isalnum():
-            fatal_error(f"The specified Title ID is not valid! The new Title ID should be alphanumeric.")
-        # Get the current TID high, because we want to preserve the title type while only changing the TID low.
-        tid_high = title.tmd.title_id[:8]
-        new_tid = f"{tid_high}{str(binascii.hexlify(new_tid.encode()), 'ascii')}"
-        title.set_title_id(new_tid)
-        edits_made = True
-    if args.ios is not None:
-        # Setting a new required IOS.
-        new_ios = None
-        try:
-            new_ios = int(args.ios)
-        except ValueError:
-            fatal_error("The specified IOS is not valid! The new IOS should be a valid integer.")
-        if new_ios < 3 or new_ios > 255:
-            fatal_error("The specified IOS is not valid! The new IOS version should be between 3 and 255.")
-        new_ios_tid = f"00000001{new_ios:08X}"
-        title.tmd.ios_tid = new_ios_tid
-        edits_made = True
-    if args.type is not None:
-        # Setting a new title type.
-        new_type = args.type
-        new_tid_high = None
-        match new_type:
-            case "System":
-                new_tid_high = "00000001"
-            case "Channel":
-                new_tid_high = "00010001"
-            case "SystemChannel":
-                new_tid_high = "00010002"
-            case "GameChannel":
-                new_tid_high = "00010004"
-            case "DLC":
-                new_tid_high = "00010005"
-            case "HiddenChannel":
-                new_tid_high = "00010008"
-            case _:
-                fatal_error("The specified type is not valid! The new type must be one of: System, Channel, "
-                            "SystemChannel, GameChannel, DLC, HiddenChannel.")
-        tid_low = title.tmd.title_id[8:]
-        new_tid = f"{new_tid_high}{tid_low}"
-        title.set_title_id(new_tid)
-        edits_made = True
-
-    if not edits_made:
-        fatal_error("You must specify at least one change to make!")
-
-    # Fakesign the title since any changes have already invalidated the signature.
-    title.fakesign()
-    output_path.write_bytes(title.dump_wad())
-
-    print("Successfully edited WAD file!")
