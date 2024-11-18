@@ -11,9 +11,14 @@ from modules.core import fatal_error
 def _print_tmd_info(tmd: libWiiPy.title.TMD):
     # Get all important keys from the TMD and print them out nicely.
     print("Title Info")
+    ascii_tid = ""
     try:
-        print(f"  Title ID: {tmd.title_id.upper()} ({str(bytes.fromhex(tmd.title_id[8:]).decode()).upper()})")
+        ascii_tid = (bytes.fromhex(tmd.title_id[8:].replace("00", "30"))).decode("ascii")
     except UnicodeDecodeError:
+        pass
+    if ascii_tid.isalnum():
+        print(f"  Title ID: {tmd.title_id.upper()} ({ascii_tid})")
+    else:
         print(f"  Title ID: {tmd.title_id.upper()}")
     # This type of version number really only applies to the System Menu and IOS.
     if tmd.title_id.startswith("00000001"):
@@ -80,10 +85,14 @@ def _print_tmd_info(tmd: libWiiPy.title.TMD):
 def _print_ticket_info(ticket: libWiiPy.title.Ticket):
     # Get all important keys from the TMD and print them out nicely.
     print(f"Ticket Info")
+    ascii_tid = ""
     try:
-        print(f"  Title ID: {ticket.title_id.decode().upper()} "
-              f"({str(bytes.fromhex(ticket.title_id.decode()[8:]).decode()).upper()})")
-    except UnicodeDecodeError:
+        ascii_tid = str(bytes.fromhex(ticket.title_id.decode()[8:].replace("00", "30")).decode("ascii")).upper()
+    except UnicodeDecodeError or binascii.Error:
+        pass
+    if ascii_tid.isalnum():
+        print(f"  Title ID: {ticket.title_id.decode().upper()} ({ascii_tid})")
+    else:
         print(f"  Title ID: {ticket.title_id.decode().upper()}")
     # This type of version number really only applies to the System Menu and IOS.
     if ticket.title_id.decode().startswith("00000001"):
