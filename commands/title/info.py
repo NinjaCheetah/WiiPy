@@ -1,8 +1,9 @@
 # "commands/title/info.py" from WiiPy by NinjaCheetah
 # https://github.com/NinjaCheetah/WiiPy
 
-import pathlib
 import binascii
+import pathlib
+import re
 import libWiiPy
 from modules.core import fatal_error
 
@@ -15,14 +16,19 @@ def _print_tmd_info(tmd: libWiiPy.title.TMD):
     except UnicodeDecodeError:
         print(f"  Title ID: {tmd.title_id.upper()}")
     # This type of version number really only applies to the System Menu and IOS.
-    if tmd.title_id[:8] == "00000001":
-        print(f"  Title Version: {tmd.title_version} ({tmd.title_version_converted})")
+    if tmd.title_id.startswith("00000001"):
+        if tmd.title_id == "0000000100000001":
+            print(f"  Title Version: {tmd.title_version} (boot2v{tmd.title_version})")
+        else:
+            print(f"  Title Version: {tmd.title_version} ({tmd.title_version_converted})")
     else:
         print(f"  Title Version: {tmd.title_version}")
     print(f"  TMD Version: {tmd.tmd_version}")
     # IOSes just have an all-zero TID, so don't bothering showing that.
     if tmd.ios_tid == "0000000000000000":
         print(f"  Required IOS: N/A")
+    elif tmd.title_id == "0000000100000001":
+        pass
     else:
         print(f"  Required IOS: IOS{int(tmd.ios_tid[-2:], 16)} ({tmd.ios_tid.upper()})")
     if tmd.signature_issuer.find("CP00000004") != -1:
@@ -80,7 +86,7 @@ def _print_ticket_info(ticket: libWiiPy.title.Ticket):
     except UnicodeDecodeError:
         print(f"  Title ID: {ticket.title_id.decode().upper()}")
     # This type of version number really only applies to the System Menu and IOS.
-    if ticket.title_id.decode()[:8] == "00000001":
+    if ticket.title_id.decode().startswith("00000001"):
         print(f"  Title Version: {ticket.title_version} "
               f"({libWiiPy.title.title_ver_dec_to_standard(ticket.title_version, ticket.title_id.decode())})")
     else:
@@ -146,17 +152,26 @@ def handle_info(args):
     if not input_path.exists():
         fatal_error(f"The specified input file \"{input_path}\" does not exist!")
 
-    if input_path.suffix.lower() == ".tmd":
+    if (input_path.suffix.lower() == ".tmd" or input_path.name == "tmd.bin" or
+            re.match("tmd.?[0-9]*", input_path.name)):
         tmd = libWiiPy.title.TMD()
-        tmd.load(open(input_path, "rb").read())
+        tmd.load(input_path.read_bytes())
         _print_tmd_info(tmd)
-    elif input_path.suffix.lower() == ".tik":
+    elif input_path.suffix.lower() == ".tik" or input_path.name == "ticket.bin" or input_path.name == "cetk":
         tik = libWiiPy.title.Ticket()
-        tik.load(open(input_path, "rb").read())
+        tik.load(input_path.read_bytes())
         _print_ticket_info(tik)
     elif input_path.suffix.lower() == ".wad":
         title = libWiiPy.title.Title()
-        title.load_wad(open(input_path, "rb").read())
+        title.load_wad(input_path.read_bytes())
         _print_wad_info(title)
     else:
-        fatal_error("This does not appear to be a TMD, Ticket, or WAD! No information can be provided.")
+        # Try file types that have a matchable magic number if we can't tell the easy way.
+        magic_number = open(input_path, "rb").read(8)
+        if magic_number == b'\x00\x00\x00\x20\x49\x73\x00\x00' or magic_number == b'\x00\x00\x00\x20\x69\x62\x00\x00':
+            title = libWiiPy.title.Title()
+            title.load_wad(input_path.read_bytes())
+            _print_wad_info(title)
+            return
+        else:
+            fatal_error("This does not appear to be a supported file type! No info can be provided.")
