@@ -5,7 +5,7 @@ import pathlib
 from random import randint
 import libWiiPy
 from modules.core import fatal_error
-from modules.title import tmd_edit_ios, tmd_edit_tid, tmd_edit_type
+from modules.title import title_edit_ios, title_edit_tid, title_edit_type
 
 
 def handle_wad_add(args):
@@ -151,13 +151,17 @@ def handle_wad_edit(args):
     edits_made = False
     # Go over every possible change, and apply them if they were specified.
     if args.tid is not None:
-        title.tmd = tmd_edit_tid(title.tmd, args.tid)
+        new_tid = title_edit_tid(title.tmd.title_id, args.tid)
+        title.set_title_id(new_tid)
         edits_made = True
     if args.ios is not None:
-        title.tmd = tmd_edit_ios(title.tmd, args.ios)
+        new_ios_tid = title_edit_ios(args.ios)
+        title.tmd.ios_tid = new_ios_tid
         edits_made = True
     if args.type is not None:
-        title.tmd = tmd_edit_type(title.tmd, args.type)
+        print(title.tmd.title_id)
+        new_tid = title_edit_type(title.tmd.title_id, args.type)
+        title.set_title_id(new_tid)
         edits_made = True
 
     if not edits_made:

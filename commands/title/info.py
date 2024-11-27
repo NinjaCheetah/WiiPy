@@ -128,6 +128,13 @@ def _print_ticket_info(ticket: libWiiPy.title.Ticket):
 
 def _print_wad_info(title: libWiiPy.title.Title):
     print(f"WAD Info")
+    channel_title = ""
+    try:
+        channel_title = title.get_channel_name()
+    except ValueError:
+        pass
+    if channel_title:
+        print(f"  Channel Name: {channel_title}")
     match title.wad.wad_type:
         case "Is":
             print(f"  WAD Type: Standard Installable")
