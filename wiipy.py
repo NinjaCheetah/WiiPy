@@ -314,6 +314,8 @@ if __name__ == "__main__":
     wad_edit_parser.add_argument("--type", metavar="TYPE", type=str,
                                  help="a new title type for this WAD (valid options: System, Channel, SystemChannel, "
                                       "GameChannel, DLC, HiddenChannel)")
+    wad_edit_parser.add_argument("--channel-name", metavar="CHANNEL", type=str,
+                                 help="a new Channel name for this WAD, if it contains a channel")
     wad_edit_parser.add_argument("-o", "--output", metavar="OUT", type=str,
                                  help="file to output the updated WAD to (optional)")
     # Pack WAD subcommand.

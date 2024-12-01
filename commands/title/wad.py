@@ -1,6 +1,7 @@
 # "commands/title/wad.py" from WiiPy by NinjaCheetah
 # https://github.com/NinjaCheetah/WiiPy
 
+import io
 import pathlib
 from random import randint
 import libWiiPy
@@ -161,6 +162,39 @@ def handle_wad_edit(args):
     if args.type is not None:
         new_tid = title_edit_type(title.tmd.title_id, args.type)
         title.set_title_id(new_tid)
+        edits_made = True
+    if args.channel_name is not None:
+        # Assess if this is actually a channel, because a channel name can't be set otherwise.
+        banner_data = title.get_content_by_index(0)
+        with io.BytesIO(banner_data) as data:
+            data.seek(0x40)
+            magic = data.read(4)
+            if magic != b'\x49\x4D\x45\x54':
+                data.seek(0x80)
+                magic = data.read(4)
+                if magic != b'\x49\x4D\x45\x54':
+                    fatal_error(f"This WAD file doesn't contain a Channel, so a new Channel name cannot be set!")
+                target = 0x40
+            else:
+                target = 0x0
+            # Read out the IMET header data, load it, edit it, then dump it back to bytes and directly write it over
+            # the old header data, since libWiiPy doesn't offer a cleaner solution currently.
+            data.seek(target)
+            imet_data = data.read(0x600)
+            imet_header = libWiiPy.archive.IMETHeader()
+            imet_header.load(imet_data)
+            target_languages = list(imet_header.LocalizedTitles)
+            try:
+                for target_language in target_languages:
+                    imet_header.set_channel_names((target_language, args.channel_name))
+            except ValueError:
+                fatal_error(f"The specified Channel name is not valid! Channel names must be no longer than 40 "
+                            f"characters.")
+            imet_data = imet_header.dump()
+            data.seek(target)
+            data.write(imet_data)
+            data.seek(0x0)
+            title.set_content(data.read(), 0)
         edits_made = True
 
     if not edits_made:

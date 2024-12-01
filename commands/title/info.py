@@ -98,8 +98,11 @@ def _print_ticket_info(ticket: libWiiPy.title.Ticket):
         print(f"  Title ID: {ticket.title_id.decode().upper()}")
     # This type of version number really only applies to the System Menu and IOS.
     if ticket.title_id.decode().startswith("00000001"):
-        print(f"  Title Version: {ticket.title_version} "
-              f"({libWiiPy.title.title_ver_dec_to_standard(ticket.title_version, ticket.title_id.decode())})")
+        if ticket.title_id.decode() == "0000000100000001":
+            print(f"  Title Version: {ticket.title_version} (boot2v{ticket.title_version})")
+        else:
+            print(f"  Title Version: {ticket.title_version} "
+                  f"({libWiiPy.title.title_ver_dec_to_standard(ticket.title_version, ticket.title_id.decode())})")
     else:
         print(f"  Title Version: {ticket.title_version}")
     print(f"  Ticket Version: {ticket.ticket_version}")
@@ -132,10 +135,13 @@ def _print_wad_info(title: libWiiPy.title.Title):
     print(f"WAD Info")
     banner_data = title.get_content_by_index(0)
     banner_u8 = libWiiPy.archive.U8Archive()
-    banner_u8.load(banner_data)
-    if banner_u8.imet_header.magic != "":
-        channel_title = banner_u8.imet_header.get_channel_names(banner_u8.imet_header.LocalizedTitles.TITLE_ENGLISH)
-        print(f"  Channel Name: {channel_title}")
+    try:
+        banner_u8.load(banner_data)
+        if banner_u8.imet_header.magic != "":
+            channel_title = banner_u8.imet_header.get_channel_names(banner_u8.imet_header.LocalizedTitles.TITLE_ENGLISH)
+            print(f"  Channel Name: {channel_title}")
+    except TypeError:
+        pass
     match title.wad.wad_type:
         case "Is":
             print(f"  WAD Type: Standard Installable")
