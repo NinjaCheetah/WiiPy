@@ -159,7 +159,6 @@ def handle_wad_edit(args):
         title.tmd.ios_tid = new_ios_tid
         edits_made = True
     if args.type is not None:
-        print(title.tmd.title_id)
         new_tid = title_edit_type(title.tmd.title_id, args.type)
         title.set_title_id(new_tid)
         edits_made = True

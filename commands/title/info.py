@@ -16,7 +16,8 @@ def _print_tmd_info(tmd: libWiiPy.title.TMD):
         ascii_tid = (bytes.fromhex(tmd.title_id[8:].replace("00", "30"))).decode("ascii")
     except UnicodeDecodeError:
         pass
-    if ascii_tid.isalnum():
+    pattern = r"^[a-z0-9!@#$%^&*]{4}$"
+    if re.fullmatch(pattern, ascii_tid, re.IGNORECASE):
         print(f"  Title ID: {tmd.title_id.upper()} ({ascii_tid})")
     else:
         print(f"  Title ID: {tmd.title_id.upper()}")
@@ -87,10 +88,11 @@ def _print_ticket_info(ticket: libWiiPy.title.Ticket):
     print(f"Ticket Info")
     ascii_tid = ""
     try:
-        ascii_tid = str(bytes.fromhex(ticket.title_id.decode()[8:].replace("00", "30")).decode("ascii")).upper()
+        ascii_tid = str(bytes.fromhex(ticket.title_id.decode()[8:].replace("00", "30")).decode("ascii"))
     except UnicodeDecodeError or binascii.Error:
         pass
-    if ascii_tid.isalnum():
+    pattern = r"^[a-z0-9!@#$%^&*]{4}$"
+    if re.fullmatch(pattern, ascii_tid, re.IGNORECASE):
         print(f"  Title ID: {ticket.title_id.decode().upper()} ({ascii_tid})")
     else:
         print(f"  Title ID: {ticket.title_id.decode().upper()}")
@@ -128,12 +130,11 @@ def _print_ticket_info(ticket: libWiiPy.title.Ticket):
 
 def _print_wad_info(title: libWiiPy.title.Title):
     print(f"WAD Info")
-    channel_title = ""
-    try:
-        channel_title = title.get_channel_name()
-    except ValueError:
-        pass
-    if channel_title:
+    banner_data = title.get_content_by_index(0)
+    banner_u8 = libWiiPy.archive.U8Archive()
+    banner_u8.load(banner_data)
+    if banner_u8.imet_header.magic != "":
+        channel_title = banner_u8.imet_header.get_channel_names(banner_u8.imet_header.LocalizedTitles.TITLE_ENGLISH)
         print(f"  Channel Name: {channel_title}")
     match title.wad.wad_type:
         case "Is":

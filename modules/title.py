@@ -2,6 +2,7 @@
 # https://github.com/NinjaCheetah/WiiPy
 
 import binascii
+import re
 from modules.core import fatal_error
 
 
@@ -18,11 +19,12 @@ def title_edit_ios(new_ios: str) -> str:
 
 
 def title_edit_tid(tid: str, new_tid: str) -> str:
-    # Setting a new TID, only changing TID low since this expects a 4 character ASCII input.
-    if len(new_tid) != 4:
-        fatal_error(f"The specified Title ID is not valid! The new Title ID should be 4 characters long.")
-    if not new_tid.isalnum():
-        fatal_error(f"The specified Title ID is not valid! The new Title ID should be alphanumeric.")
+    # Setting a new TID, only changing TID low since this expects a 4 character input with letters, numbers, and some
+    # symbols.
+    pattern = r"^[a-z0-9!@#$%^&*]{4}$"
+    if not re.fullmatch(pattern, new_tid, re.IGNORECASE):
+        fatal_error(f"The specified Title ID is not valid! The new Title ID should be 4 characters and only include "
+                    f"letters, numbers, and the special characters \"!@#$%&*\".")
     # Get the current TID high, because we want to preserve the title type while only changing the TID low.
     tid_high = tid[:8]
     new_tid = f"{tid_high}{str(binascii.hexlify(new_tid.encode()), 'ascii')}"
