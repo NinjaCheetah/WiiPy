@@ -73,11 +73,11 @@ def handle_emunand_info(args):
                 print(f"  BC-NAND ({ios.upper()})")
             elif ios[8:] == "00000201":
                 print(f"  BC-WFS ({ios.upper()})")
-            tmd = emunand.get_title_tmd(f"{ios}")
+            tmd = emunand.get_title_tmd(ios)
             print(f"    Version: {tmd.title_version}")
         else:
             print(f"  IOS{int(ios[-2:], 16)} ({ios.upper()})")
-            tmd = emunand.get_title_tmd(f"{ios}")
+            tmd = emunand.get_title_tmd(ios)
             print(f"    Version: {tmd.title_version} ({tmd.title_version_converted})")
     print("")
 
@@ -123,7 +123,61 @@ def handle_emunand_info(args):
               f"IOSes required but not installed are:")
         for missing in missing_ioses:
             print(f"  IOS{int(missing[-2:], 16)} ({missing.upper()})")
-        print("")
+        print("Missing IOSes can be automatically installed using the install-missing command.")
+
+
+def handle_emunand_install_missing(args):
+    # Get an index of all installed titles, and check their required IOSes. Then compare the required IOSes with the
+    # installed IOSes, and build a list of IOSes we need to obtain.
+    emunand = libWiiPy.nand.EmuNAND(args.emunand)
+    if args.vwii:
+        is_vwii = True
+    else:
+        # Try and detect a vWii System Menu, if one is installed, so that we get vWii IOSes if they're needed.
+        try:
+            tmd = emunand.get_title_tmd("0000000100000002")
+            is_vwii = bool(tmd.vwii)
+        except FileNotFoundError:
+            is_vwii = False
+    categories = emunand.get_installed_titles()
+    installed_ioses = []
+    installed_titles = []
+    for category in categories:
+        if category.type == "00000001":
+            for title in category.titles:
+                if title == "00000002":
+                    installed_titles.append(f"{category.type}{title}")
+                else:
+                    installed_ioses.append(f"{category.type}{title}")
+        elif category.type != "00010000":
+            for title in category.titles:
+                installed_titles.append(f"{category.type}{title}")
+    missing = []
+    for title in installed_titles:
+        tmd = emunand.get_title_tmd(title)
+        if tmd.ios_tid.upper() not in installed_ioses:
+            if tmd.ios_tid not in missing:
+                missing.append(int(tmd.ios_tid[8:], 16))
+    missing.sort()
+    if is_vwii:
+        missing_ioses = [f"00000007{i:08X}" for i in missing]
+    else:
+        missing_ioses = [f"00000001{i:08X}" for i in missing]
+    if not missing_ioses:
+        print(f"All necessary IOSes are already installed!")
+        return
+    print(f"Missing IOSes:")
+    for ios in missing_ioses:
+        print(f"  IOS{int(ios[-2:], 16)} ({ios.upper()})")
+    print("")
+    # Download and then install each missing IOS to the EmuNAND.
+    for ios in missing_ioses:
+        print(f"Downloading IOS{int(ios[-2:], 16)} ({ios.upper()})...")
+        title = libWiiPy.title.download_title(ios)
+        print(f"  Installing IOS{int(ios[-2:], 16)} ({ios.upper()}) v{title.tmd.title_version}...")
+        emunand.install_title(title)
+        print(f"  Installed IOS{int(ios[-2:], 16)} ({ios.upper()}) v{title.tmd.title_version}!")
+    print(f"\nAll missing IOSes have been installed!")
 
 
 def handle_emunand_title(args):
@@ -165,7 +219,7 @@ def handle_emunand_title(args):
         input_str = args.uninstall
         if pathlib.Path(input_str).exists():
             title = libWiiPy.title.Title()
-            title.load_wad(open(pathlib.Path(input_str), "rb").read())
+            title.load_wad(pathlib.Path(input_str).read_bytes())
             target_tid = title.tmd.title_id
         else:
             target_tid = input_str
@@ -173,6 +227,6 @@ def handle_emunand_title(args):
         if len(target_tid) != 16:
             fatal_error("The provided Title ID is invalid! Title IDs must be 16 characters long.")
 
-        emunand.uninstall_title(target_tid)
+        emunand.uninstall_title(target_tid.lower())
 
         print("Title uninstalled from EmuNAND!")

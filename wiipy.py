@@ -82,6 +82,19 @@ if __name__ == "__main__":
     emunand_info_parser.set_defaults(func=handle_emunand_info)
     emunand_info_parser.add_argument("emunand", metavar="EMUNAND", type=str,
                                      help="path of the EmuNAND directory")
+    # Install-Missing EmuNAND command.
+    emunand_install_missing_parser = emunand_subparsers.add_parser("install-missing",
+                                                                   help="install missing IOSes to an EmuNAND",
+                                                                   description="install missing IOSes to an EmuNAND by "
+                                                                               "checking installed titles and finding "
+                                                                               "their required IOSes, then downloading "
+                                                                               "and installing any that are missing")
+    emunand_install_missing_parser.set_defaults(func=handle_emunand_install_missing)
+    emunand_install_missing_parser.add_argument("emunand", metavar="EMUNAND", type=str,
+                                                help="path of the EmuNAND directory")
+    emunand_install_missing_parser.add_argument("--vwii", action="store_true",
+                                                help="override the automatic vWii detection based on the installed "
+                                                     "System Menu and use vWii IOSes")
     # Title EmuNAND subcommand.
     emunand_title_parser = emunand_subparsers.add_parser("title", help="manage titles on an EmuNAND",
                                                          description="manage titles on an EmuNAND")
