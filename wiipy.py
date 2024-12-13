@@ -76,12 +76,18 @@ if __name__ == "__main__":
     emunand_parser = subparsers.add_parser("emunand", help="manage Wii EmuNAND directories",
                                            description="manage Wii EmuNAND directories")
     emunand_subparsers = emunand_parser.add_subparsers(title="emunand", dest="emunand", required=True)
+    # Info EmuNAND subcommand.
+    emunand_info_parser = emunand_subparsers.add_parser("info", help="show info about an EmuNAND",
+                                                        description="show info about an EmuNAND")
+    emunand_info_parser.set_defaults(func=handle_emunand_info)
+    emunand_info_parser.add_argument("emunand", metavar="EMUNAND", type=str,
+                                     help="path of the EmuNAND directory")
     # Title EmuNAND subcommand.
     emunand_title_parser = emunand_subparsers.add_parser("title", help="manage titles on an EmuNAND",
                                                          description="manage titles on an EmuNAND")
     emunand_title_parser.set_defaults(func=handle_emunand_title)
     emunand_title_parser.add_argument("emunand", metavar="EMUNAND", type=str,
-                                      help="path to the target EmuNAND directory")
+                                      help="path of the target EmuNAND directory")
     emunand_title_install_group = emunand_title_parser.add_mutually_exclusive_group(required=True)
     emunand_title_install_group.add_argument("--install", metavar="WAD", type=str,
                                              help="install the target WAD(s) to an EmuNAND (can be a single file or a "
