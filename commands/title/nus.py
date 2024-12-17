@@ -47,9 +47,9 @@ def handle_nus_title(args):
 
     # Announce the title being downloaded, and the version if applicable.
     if title_version is not None:
-        print("Downloading title " + tid + " v" + str(title_version) + ", please wait...")
+        print(f"Downloading title {tid} v{title_version}, please wait...")
     else:
-        print("Downloading title " + tid + " vLatest, please wait...")
+        print(f"Downloading title {tid} vLatest, please wait...")
     print(" - Downloading and parsing TMD...")
     # Download a specific TMD version if a version was specified, otherwise just download the latest TMD.
     if title_version is not None:
@@ -59,7 +59,7 @@ def handle_nus_title(args):
         title_version = title.tmd.title_version
     # Write out the TMD to a file.
     if output_dir is not None:
-        output_dir.joinpath("tmd." + str(title_version)).write_bytes(title.tmd.dump())
+        output_dir.joinpath(f"tmd.{title_version}").write_bytes(title.tmd.dump())
 
     # Download the ticket, if we can.
     print(" - Downloading and parsing Ticket...")
@@ -83,10 +83,9 @@ def handle_nus_title(args):
         content_file_name = hex(title.tmd.content_records[content].content_id)[2:]
         while len(content_file_name) < 8:
             content_file_name = "0" + content_file_name
-        print(" - Downloading content " + str(content + 1) + " of " +
-              str(len(title.tmd.content_records)) + " (Content ID: " +
-              str(title.tmd.content_records[content].content_id) + ", Size: " +
-              str(title.tmd.content_records[content].content_size) + " bytes)...")
+        print(f" - Downloading content {content + 1} of {len(title.tmd.content_records)} "
+              f"(Content ID: {title.tmd.content_records[content].content_id}, "
+              f"Size: {title.tmd.content_records[content].content_size} bytes)...")
         content_list.append(libWiiPy.title.download_content(tid, title.tmd.content_records[content].content_id,
                                                             wiiu_endpoint=wiiu_nus_enabled))
         print("   - Done!")
@@ -99,8 +98,8 @@ def handle_nus_title(args):
     if output_dir is not None:
         if can_decrypt is True:
             for content in range(len(title.tmd.content_records)):
-                print(" - Decrypting content " + str(content + 1) + " of " + str(len(title.tmd.content_records)) +
-                      " (Content ID: " + str(title.tmd.content_records[content].content_id) + ")...")
+                print(f" - Decrypting content {content + 1} of {len(title.tmd.content_records)} "
+                      f"(Content ID: {title.tmd.content_records[content].content_id})...")
                 dec_content = title.get_content_by_index(content)
                 content_file_name = f"{title.tmd.content_records[content].content_id:08X}".lower() + ".app"
                 output_dir.joinpath(content_file_name).write_bytes(dec_content)
@@ -111,7 +110,7 @@ def handle_nus_title(args):
     if wad_file is not None:
         # Get the WAD certificate chain.
         print(" - Building certificate...")
-        title.wad.set_cert_data(libWiiPy.title.download_cert(wiiu_endpoint=wiiu_nus_enabled))
+        title.load_cert_chain(libWiiPy.title.download_cert_chain(wiiu_endpoint=wiiu_nus_enabled))
         # Ensure that the path ends in .wad, and add that if it doesn't.
         print("Packing WAD...")
         if wad_file.suffix != ".wad":
@@ -119,7 +118,7 @@ def handle_nus_title(args):
         # Have libWiiPy dump the WAD, and write that data out.
         pathlib.Path(wad_file).write_bytes(title.dump_wad())
 
-    print("Downloaded title with Title ID \"" + args.tid + "\"!")
+    print(f"Downloaded title with Title ID \"{args.tid}\"!")
 
 
 def handle_nus_content(args):
@@ -151,7 +150,7 @@ def handle_nus_content(args):
         fatal_error("You must specify the version that the requested content belongs to for decryption!")
 
     # Try to download the content, and catch the ValueError libWiiPy will throw if it can't be found.
-    print("Downloading content with Content ID " + cid + "...")
+    print(f"Downloading content with Content ID {cid}...")
     content_data = None
     try:
         content_data = libWiiPy.title.download_content(tid, content_id)
