@@ -253,7 +253,7 @@ def handle_wad_pack(args):
     title = libWiiPy.title.Title()
     title.load_tmd(tmd_file.read_bytes())
     title.load_ticket(ticket_file.read_bytes())
-    title.wad.set_cert_data(cert_file.read_bytes())
+    title.load_cert_chain(cert_file.read_bytes())
     # Footers are not super common and are not required, so we don't care about one existing until we get to
     # the step where we'd pack it.
     footer_file = pathlib.Path(list(input_path.glob("*.[fF][oO][oO][tT][eE][rR]"))[0])

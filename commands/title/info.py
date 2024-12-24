@@ -8,7 +8,7 @@ import libWiiPy
 from modules.core import fatal_error
 
 
-def _print_tmd_info(tmd: libWiiPy.title.TMD, signed=None):
+def _print_tmd_info(tmd: libWiiPy.title.TMD, signing_cert=None):
     # Get all important keys from the TMD and print them out nicely.
     print("Title Info")
     ascii_tid = ""
@@ -69,9 +69,23 @@ def _print_tmd_info(tmd: libWiiPy.title.TMD, signed=None):
     print(f"  vWii Title: {bool(tmd.vwii)}")
     print(f"  DVD Video Access: {tmd.get_access_right(tmd.AccessFlags.DVD_VIDEO)}")
     print(f"  AHB Access: {tmd.get_access_right(tmd.AccessFlags.AHB)}")
-    if signed is not None:
-        print(f"  Signed: {signed}")
-    print(f"  Fakesigned: {tmd.get_is_fakesigned()}")
+    if signing_cert is not None:
+        try:
+            signed = libWiiPy.title.verify_tmd_sig(signing_cert, tmd)
+            if signed:
+                signing_str = "Valid (Unmodified)"
+            elif tmd.get_is_fakesigned():
+                signing_str = "Fakesigned"
+            else:
+                signing_str = "Invalid (Modified)"
+        except ValueError:
+            if tmd.get_is_fakesigned():
+                signing_str = "Fakesigned"
+            else:
+                signing_str = "Invalid (Modified)"
+        print(f"  Signing Status: {signing_str}")
+    else:
+        print(f"  Fakesigned: {tmd.get_is_fakesigned()}")
     # Iterate over the content and print their details.
     print("\nContent Info")
     print(f"  Total Contents: {tmd.num_contents}")
@@ -85,7 +99,7 @@ def _print_tmd_info(tmd: libWiiPy.title.TMD, signed=None):
         print(f"      Content Hash: {content.content_hash.decode()}")
 
 
-def _print_ticket_info(ticket: libWiiPy.title.Ticket, signed=None):
+def _print_ticket_info(ticket: libWiiPy.title.Ticket, signing_cert=None):
     # Get all important keys from the TMD and print them out nicely.
     print(f"Ticket Info")
     ascii_tid = ""
@@ -131,9 +145,23 @@ def _print_ticket_info(ticket: libWiiPy.title.Ticket, signed=None):
     print(f"  Decryption Key: {key}")
     print(f"  Title Key (Encrypted): {binascii.hexlify(ticket.title_key_enc).decode()}")
     print(f"  Title Key (Decrypted): {binascii.hexlify(ticket.get_title_key()).decode()}")
-    if signed is not None:
-        print(f"  Signed: {signed}")
-    print(f"  Fakesigned: {ticket.get_is_fakesigned()}")
+    if signing_cert is not None:
+        try:
+            signed = libWiiPy.title.verify_ticket_sig(signing_cert, ticket)
+            if signed:
+                signing_str = "Valid (Unmodified)"
+            elif ticket.get_is_fakesigned():
+                signing_str = "Fakesigned"
+            else:
+                signing_str = "Invalid (Modified)"
+        except ValueError:
+            if ticket.get_is_fakesigned():
+                signing_str = "Fakesigned"
+            else:
+                signing_str = "Invalid (Modified)"
+        print(f"  Signing Status: {signing_str}")
+    else:
+        print(f"  Fakesigned: {ticket.get_is_fakesigned()}")
 
 
 def _print_wad_info(title: libWiiPy.title.Title):
@@ -168,18 +196,25 @@ def _print_wad_info(title: libWiiPy.title.Title):
         print(f"  Installed Size (MB): {min_size}-{max_size} MB")
     print(f"  Has Meta/Footer: {bool(title.wad.wad_meta_size)}")
     print(f"  Has CRL: {bool(title.wad.wad_crl_size)}")
-    signed = title.get_is_signed()
-    if signed:
-        signing_str = "Valid (Unmodified)"
-    elif title.get_is_fakesigned():
-        signing_str = "Fakesigned"
-    else:
+    tmd_cert = None
+    ticket_cert = None
+    try:
+        signed = title.get_is_signed()
+        tmd_cert = title.cert_chain.tmd_cert
+        ticket_cert = title.cert_chain.ticket_cert
+        if signed:
+            signing_str = "Valid (Unmodified)"
+        elif title.get_is_fakesigned():
+            signing_str = "Fakesigned"
+        else:
+            signing_str = "Invalid (Modified)"
+    except ValueError:
         signing_str = "Invalid (Modified)"
     print(f"  Signing Status: {signing_str}")
     print("")
-    _print_ticket_info(title.ticket, signed)
+    _print_ticket_info(title.ticket, ticket_cert)
     print("")
-    _print_tmd_info(title.tmd, signed)
+    _print_tmd_info(title.tmd, tmd_cert)
 
 
 def handle_info(args):
