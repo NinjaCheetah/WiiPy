@@ -118,7 +118,7 @@ def handle_emunand_info(args):
                 print(f"  {disc.upper()}")
         print("")
     if missing_ioses:
-        print(f"Some titles installed are missing their required IOS. These missing IOSes are marked with a * in the "
+        print(f"Some titles installed are missing their required IOS. These missing IOSes are marked with \"*\" in the "
               f"title list above. If these IOSes are not installed, the titles requiring them will not launch. The "
               f"IOSes required but not installed are:")
         for missing in missing_ioses:
@@ -156,7 +156,7 @@ def handle_emunand_install_missing(args):
     for title in installed_titles:
         tmd = emunand.get_title_tmd(title)
         if tmd.ios_tid.upper() not in installed_ioses:
-            if tmd.ios_tid not in missing:
+            if int(tmd.ios_tid[8:], 16) not in missing:
                 missing.append(int(tmd.ios_tid[8:], 16))
     missing.sort()
     if is_vwii:
