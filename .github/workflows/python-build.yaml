@@ -19,7 +19,9 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     - name: Install ccache for Nuitka
-      run: sudo apt update && sudo apt install -y ccache libicu70
+      run: |
+        sudo apt update && \
+        sudo apt install -y ccache patchelf
     - name: Set up Python 3.12
       uses: actions/setup-python@v5
       with:
@@ -36,7 +38,7 @@ jobs:
         cd ~
         tar cvf WiiPy.tar wiipy
     - name: Upload Application
-      uses: actions/upload-artifact@v4.3.0
+      uses: actions/upload-artifact@v4
       with:
         path: ~/WiiPy.tar
         name: WiiPy-Linux-bin
@@ -63,7 +65,7 @@ jobs:
           cd ~
           tar cvf WiiPy.tar wiipy
       - name: Upload Application
-        uses: actions/upload-artifact@v4.3.0
+        uses: actions/upload-artifact@v4
         with:
           path: ~/WiiPy.tar
           name: WiiPy-macOS-x86_64-bin
@@ -90,7 +92,7 @@ jobs:
           cd ~
           tar cvf WiiPy.tar wiipy
       - name: Upload Application
-        uses: actions/upload-artifact@v4.3.0
+        uses: actions/upload-artifact@v4
         with:
           path: ~/WiiPy.tar
           name: WiiPy-macOS-arm64-bin
@@ -114,7 +116,7 @@ jobs:
     - name: Build Application
       run: .\Build.ps1
     - name: Upload Application
-      uses: actions/upload-artifact@v4.3.0
+      uses: actions/upload-artifact@v4
       with:
         path: D:\a\WiiPy\WiiPy\wiipy.exe
         name: WiiPy-Windows-bin
