@@ -26,8 +26,15 @@ def handle_u8_unpack(args):
 
     if not input_path.exists():
         fatal_error(f"The specified input file \"{input_path}\" does not exist!")
+
+    u8_data = input_path.read_bytes()
+    # U8 archives are sometimes compressed. In the event that the provided data is LZ77 data, assume it's a compressed
+    # U8 archive and decompress it before continuing. Standard checks will then catch it if it was something else.
+    if u8_data[0:4] == b'LZ77':
+        u8_data = libWiiPy.archive.decompress_lz77(u8_data)
+
     # Output path is deliberately not checked in any way because libWiiPy already has those checks, and it's easier
     # and cleaner to only have one component doing all the checks.
-    libWiiPy.archive.extract_u8(input_path.read_bytes(), str(output_path))
+    libWiiPy.archive.extract_u8(u8_data, str(output_path))
 
     print("U8 archive unpacked!")

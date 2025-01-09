@@ -5,6 +5,7 @@ import argparse
 from importlib.metadata import version
 
 from commands.archive.ash import *
+from commands.archive.lz77 import *
 from commands.archive.theme import *
 from commands.archive.u8 import *
 from commands.nand.emunand import *
@@ -30,7 +31,7 @@ if __name__ == "__main__":
     # Argument parser for the ASH subcommand.
     ash_parser = subparsers.add_parser("ash", help="compress/decompress an ASH file",
                                        description="compress/decompress an ASH file")
-    ash_subparsers = ash_parser.add_subparsers(title="emunand", dest="emunand", required=True)
+    ash_subparsers = ash_parser.add_subparsers(title="ash", dest="ash", required=True)
     # ASH compress parser.
     ash_compress_parser = ash_subparsers.add_parser("compress", help="compress a file into an ASH file",
                                                     description="compress a file into an ASH file; by default, this "
@@ -145,6 +146,28 @@ if __name__ == "__main__":
     iospatch_parser.add_argument("-a", "--all", action="store_true", help="apply all patches (overrides other options)")
     iospatch_parser.add_argument("-ns", "--no-shared", action="store_true",
                                  help="set all patched content to be non-shared")
+
+    # Argument parser for the LZ77 subcommand.
+    lz77_parser = subparsers.add_parser("lz77", help="compress/decompress data using LZ77 compression",
+                                        description="compress/decompress data using LZ77 compression")
+    lz77_subparsers = lz77_parser.add_subparsers(title="lz77", dest="lz77", required=True)
+    # LZ77 compress parser.
+    lz77_compress_parser = lz77_subparsers.add_parser("compress", help="compress a file with LZ77 compression",
+                                                    description="compress a file with LZ77 compression; by default, "
+                                                                "this will output to <input file>.lz77")
+    lz77_compress_parser.set_defaults(func=handle_lz77_compress)
+    lz77_compress_parser.add_argument("input", metavar="IN", type=str, help="file to compress")
+    lz77_compress_parser.add_argument("-o", "--output", metavar="OUT", type=str,
+                                      help="file to output the compressed data to (optional)")
+    # LZ77 decompress parser.
+    lz77_decompress_parser = lz77_subparsers.add_parser("decompress", help="decompress an LZ77-compressed file",
+                                                        description="decompress an LZ77-compressed file; by default, "
+                                                                    "this will output to <input file>.out")
+    lz77_decompress_parser.set_defaults(func=handle_lz77_decompress)
+    lz77_decompress_parser.add_argument("input", metavar="IN", type=str,
+                                        help="LZ77-compressed file to decompress")
+    lz77_decompress_parser.add_argument("-o", "--output", metavar="OUT", type=str,
+                                        help="file to output the decompressed data to (optional)")
 
     # Argument parser for the NUS subcommand.
     nus_parser = subparsers.add_parser("nus", help="download data from the NUS",
