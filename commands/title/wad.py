@@ -81,7 +81,6 @@ def handle_wad_convert(args):
     else:
         fatal_error("No valid encryption target was specified!")
 
-    output_path = pathlib.Path(args.output)
     if args.output is None:
         match target:
             case "development":
@@ -92,6 +91,8 @@ def handle_wad_convert(args):
                 output_path = pathlib.Path(input_path.stem + "_vWii" + input_path.suffix)
             case _:
                 fatal_error("No valid encryption target was specified!")
+    else:
+        output_path = pathlib.Path(args.output)
 
     if not input_path.exists():
         fatal_error(f"The specified WAD file \"{input_path}\" does not exist!")

@@ -186,8 +186,10 @@ if __name__ == "__main__":
                                      help="download the title to a folder")
     nus_title_out_group.add_argument("-w", "--wad", metavar="WAD", type=str,
                                      help="pack a wad with the provided name")
-    nus_title_parser.add_argument("--wii", help="use original Wii NUS instead of the Wii U servers",
+    nus_title_parser.add_argument("--wii", help="use the original Wii NUS endpoint instead of the Wii U endpoint",
                                   action="store_true")
+    nus_title_parser.add_argument("-e", "--endpoint", metavar="ENDPOINT", type=str,
+                                  help="use the specified NUS endpoint instead of the official one")
     # Content NUS subcommand.
     nus_content_parser = nus_subparsers.add_parser("content", help="download a specific content from the NUS",
                                                    description="download a specific content from the NUS")

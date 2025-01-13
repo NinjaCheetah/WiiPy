@@ -43,6 +43,9 @@ def _print_tmd_info(tmd: libWiiPy.title.TMD, signing_cert=None):
     elif tmd.signature_issuer.find("CP00000007") != -1:
         print(f"  Certificate: CP00000007 (Development)")
         print(f"  Certificate Issuer: Root-CA00000002 (Development)")
+    elif tmd.signature_issuer.find("CP00000005") != -1:
+        print(f"  Certificate: CP00000005 (Development/Unknown)")
+        print(f"  Certificate Issuer: Root-CA00000002 (Development)")
     elif tmd.signature_issuer.find("CP10000000") != -1:
         print(f"  Certificate: CP10000000 (Arcade)")
         print(f"  Certificate Issuer: Root-CA10000000 (Arcade)")
@@ -127,6 +130,9 @@ def _print_ticket_info(ticket: libWiiPy.title.Ticket, signing_cert=None):
         print(f"  Certificate Issuer: Root-CA00000001 (Retail)")
     elif ticket.signature_issuer.find("XS00000006") != -1:
         print(f"  Certificate: XS00000006 (Development)")
+        print(f"  Certificate Issuer: Root-CA00000002 (Development)")
+    elif ticket.signature_issuer.find("XS00000004") != -1:
+        print(f"  Certificate: XS00000004 (Development/Unknown)")
         print(f"  Certificate Issuer: Root-CA00000002 (Development)")
     else:
         print(f"  Certificate Info: {ticket.signature_issuer} (Unknown)")
