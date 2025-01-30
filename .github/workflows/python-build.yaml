@@ -118,5 +118,10 @@ jobs:
     - name: Upload Application
       uses: actions/upload-artifact@v4
       with:
-        path: D:\a\WiiPy\WiiPy\wiipy.exe
+        path: D:\a\WiiPy\WiiPy\WiiPy.dist
         name: WiiPy-Windows-bin
+    - name: Upload Onefile Application
+      uses: actions/upload-artifact@v4
+      with:
+        path: D:\a\WiiPy\WiiPy\wiipy.exe
+        name: WiiPy-Windows-onefile-bin
