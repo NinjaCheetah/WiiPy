@@ -74,19 +74,18 @@ def _print_tmd_info(tmd: libWiiPy.title.TMD, signing_cert=None):
     print(f"  AHB Access: {tmd.get_access_right(tmd.AccessFlags.AHB)}")
     if signing_cert is not None:
         try:
-            signed = libWiiPy.title.verify_tmd_sig(signing_cert, tmd)
-            if signed:
-                signing_str = "Valid (Unmodified)"
+            if libWiiPy.title.verify_tmd_sig(signing_cert, tmd):
+                signing_str = "Valid (Unmodified TMD)"
             elif tmd.get_is_fakesigned():
                 signing_str = "Fakesigned"
             else:
-                signing_str = "Invalid (Modified)"
+                signing_str = "Invalid (Modified TMD)"
         except ValueError:
             if tmd.get_is_fakesigned():
                 signing_str = "Fakesigned"
             else:
-                signing_str = "Invalid (Modified)"
-        print(f"  Signing Status: {signing_str}")
+                signing_str = "Invalid (Modified TMD)"
+        print(f"  Signature: {signing_str}")
     else:
         print(f"  Fakesigned: {tmd.get_is_fakesigned()}")
     # Iterate over the content and print their details.
@@ -153,19 +152,18 @@ def _print_ticket_info(ticket: libWiiPy.title.Ticket, signing_cert=None):
     print(f"  Title Key (Decrypted): {binascii.hexlify(ticket.get_title_key()).decode()}")
     if signing_cert is not None:
         try:
-            signed = libWiiPy.title.verify_ticket_sig(signing_cert, ticket)
-            if signed:
-                signing_str = "Valid (Unmodified)"
+            if libWiiPy.title.verify_ticket_sig(signing_cert, ticket):
+                signing_str = "Valid (Unmodified Ticket)"
             elif ticket.get_is_fakesigned():
                 signing_str = "Fakesigned"
             else:
-                signing_str = "Invalid (Modified)"
+                signing_str = "Invalid (Modified Ticket)"
         except ValueError:
             if ticket.get_is_fakesigned():
                 signing_str = "Fakesigned"
             else:
-                signing_str = "Invalid (Modified)"
-        print(f"  Signing Status: {signing_str}")
+                signing_str = "Invalid (Modified Ticket)"
+        print(f"  Signature: {signing_str}")
     else:
         print(f"  Fakesigned: {ticket.get_is_fakesigned()}")
 
@@ -205,17 +203,22 @@ def _print_wad_info(title: libWiiPy.title.Title):
     tmd_cert = None
     ticket_cert = None
     try:
-        signed = title.get_is_signed()
         tmd_cert = title.cert_chain.tmd_cert
         ticket_cert = title.cert_chain.ticket_cert
-        if signed:
-            signing_str = "Valid (Unmodified)"
+        if title.get_is_signed():
+            signing_str = "Legitimate (Unmodified TMD + Ticket)"
         elif title.get_is_fakesigned():
             signing_str = "Fakesigned"
+        elif (libWiiPy.title.verify_tmd_sig(tmd_cert, title.tmd)
+            and not libWiiPy.title.verify_ticket_sig(ticket_cert, title.ticket)):
+            signing_str = "Piratelegit (Unmodified TMD, Modified Ticket)"
+        elif (not libWiiPy.title.verify_tmd_sig(tmd_cert, title.tmd)
+              and libWiiPy.title.verify_ticket_sig(ticket_cert, title.ticket)):
+            signing_str = "Edited (Modified TMD, Unmodified Ticket)"
         else:
-            signing_str = "Invalid (Modified)"
+            signing_str = "Illegitimate (Modified TMD + Ticket)"
     except ValueError:
-        signing_str = "Invalid (Modified)"
+        signing_str = "Illegitimate (Modified TMD + Ticket)"
     print(f"  Signing Status: {signing_str}")
     print("")
     _print_ticket_info(title.ticket, ticket_cert)
