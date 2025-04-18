@@ -106,14 +106,14 @@ def _print_ticket_info(ticket: libWiiPy.title.Ticket, signing_cert=None):
     print(f"Ticket Info")
     ascii_tid = ""
     try:
-        ascii_tid = str(bytes.fromhex(ticket.title_id.decode()[8:].replace("00", "30")).decode("ascii"))
+        ascii_tid = str(bytes.fromhex(binascii.hexlify(ticket.title_id).decode()[8:].replace("00", "30")).decode("ascii"))
     except UnicodeDecodeError or binascii.Error:
         pass
     pattern = r"^[a-z0-9!@#$%^&*]{4}$"
     if re.fullmatch(pattern, ascii_tid, re.IGNORECASE):
-        print(f"  Title ID: {ticket.title_id.decode().upper()} ({ascii_tid})")
+        print(f"  Title ID: {binascii.hexlify(ticket.title_id).decode().upper()} ({ascii_tid})")
     else:
-        print(f"  Title ID: {ticket.title_id.decode().upper()}")
+        print(f"  Title ID: {binascii.hexlify(ticket.title_id).decode().upper()}")
     # This type of version number really only applies to the System Menu and IOS.
     if ticket.title_id.decode().startswith("00000001"):
         if ticket.title_id.decode() == "0000000100000001":
