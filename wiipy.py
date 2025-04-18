@@ -18,7 +18,7 @@ from commands.title.nus import *
 from commands.title.tmd import *
 from commands.title.wad import *
 
-wiipy_ver = "1.5.0"
+wiipy_ver = "1.5.1"
 
 if __name__ == "__main__":
     # Main argument parser.
