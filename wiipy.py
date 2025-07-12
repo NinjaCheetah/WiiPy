@@ -111,6 +111,8 @@ if __name__ == "__main__":
                                                   "accepts a WAD file to read the TID from)")
     emunand_title_parser.add_argument("-s", "--skip-hash", help="skips validating the hashes of decrypted "
                                       "content (install only)", action="store_true")
+    emunand_title_parser.add_argument("-v", "--verbose", action="store_true",
+                                      help="show verbose installation/uninstallation details")
 
     # Argument parser for the fakesign subcommand.
     fakesign_parser = subparsers.add_parser("fakesign", help="fakesign a TMD, Ticket, or WAD (trucha bug)",

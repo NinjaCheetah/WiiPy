@@ -22,11 +22,12 @@ def _print_tmd_info(tmd: libWiiPy.title.TMD, signing_cert=None):
     else:
         print(f"  Title ID: {tmd.title_id.upper()}")
     # This type of version number really only applies to the System Menu and IOS.
+    title_version_converted = libWiiPy.title.title_ver_dec_to_standard(tmd.title_version, tmd.title_id, bool(tmd.vwii))
     if tmd.title_id.startswith("00000001"):
         if tmd.title_id == "0000000100000001":
             print(f"  Title Version: {tmd.title_version} (boot2v{tmd.title_version})")
         else:
-            print(f"  Title Version: {tmd.title_version} ({tmd.title_version_converted})")
+            print(f"  Title Version: {tmd.title_version} ({title_version_converted})")
     else:
         print(f"  Title Version: {tmd.title_version}")
     print(f"  TMD Version: {tmd.tmd_version}")
@@ -52,7 +53,7 @@ def _print_tmd_info(tmd: libWiiPy.title.TMD, signing_cert=None):
     else:
         print(f"  Certificate Info: {tmd.signature_issuer} (Unknown)")
     if tmd.title_id == "0000000100000002":
-        match tmd.title_version_converted[-1:]:
+        match title_version_converted[-1:]:
             case "U":
                 region = "USA"
             case "E":

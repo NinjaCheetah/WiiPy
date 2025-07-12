@@ -78,7 +78,8 @@ def handle_emunand_info(args):
         else:
             print(f"  IOS{int(ios[-2:], 16)} ({ios.upper()})")
             tmd = emunand.get_title_tmd(ios)
-            print(f"    Version: {tmd.title_version} ({tmd.title_version_converted})")
+            print(f"    Version: {tmd.title_version} "
+                  f"({libWiiPy.title.title_ver_dec_to_standard(tmd.title_version, tmd.title_id, bool(tmd.vwii))})")
     print("")
 
     print(f"Installed Titles:")
@@ -180,8 +181,13 @@ def handle_emunand_install_missing(args):
     print(f"\nAll missing IOSes have been installed!")
 
 
+def _emunand_logger(log):
+    print(log)
+
+
 def handle_emunand_title(args):
-    emunand = libWiiPy.nand.EmuNAND(args.emunand)
+    logger = _emunand_logger if args.verbose else lambda _: None
+    emunand = libWiiPy.nand.EmuNAND(args.emunand, logger)
     if args.skip_hash:
         skip_hash = True
     else:
