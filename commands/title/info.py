@@ -4,7 +4,9 @@
 import binascii
 import pathlib
 import re
+
 import libWiiPy
+
 from modules.core import fatal_error
 
 
@@ -71,8 +73,8 @@ def _print_tmd_info(tmd: libWiiPy.title.TMD, signing_cert=None):
     print(f"  Region: {region}")
     print(f"  Title Type: {tmd.get_title_type()}")
     print(f"  vWii Title: {bool(tmd.vwii)}")
-    print(f"  DVD Video Access: {tmd.get_access_right(tmd.AccessFlags.DVD_VIDEO)}")
-    print(f"  AHB Access: {tmd.get_access_right(tmd.AccessFlags.AHB)}")
+    print(f"  DVD Video Access: {tmd.get_access_right(libWiiPy.title.AccessFlags.DVD_VIDEO)}")
+    print(f"  AHB Access: {tmd.get_access_right(libWiiPy.title.AccessFlags.AHB)}")
     if signing_cert is not None:
         try:
             if libWiiPy.title.verify_tmd_sig(signing_cert, tmd):
@@ -137,6 +139,7 @@ def _print_ticket_info(ticket: libWiiPy.title.Ticket, signing_cert=None):
         print(f"  Certificate Issuer: Root-CA00000002 (Development)")
     else:
         print(f"  Certificate Info: {ticket.signature_issuer} (Unknown)")
+    key = ""
     match ticket.common_key_index:
         case 0:
             if ticket.is_dev:

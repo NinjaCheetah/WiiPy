@@ -44,7 +44,7 @@ def handle_nus_content(args):
     except ValueError:
         fatal_error("The specified Title ID or Content ID could not be found!")
 
-    if decrypt_content is True:
+    if decrypt_content:
         output_path = output_path.with_suffix(".app")
         tmd = libWiiPy.title.TMD()
         tmd.load(libWiiPy.title.download_tmd(tid, version))
@@ -175,7 +175,7 @@ def handle_nus_title(args):
 
     # Try to decrypt the contents for this title if a ticket was available.
     if output_dir is not None:
-        if can_decrypt is True:
+        if can_decrypt:
             for content in range(len(title.tmd.content_records)):
                 print(f" - Decrypting content {content + 1} of {len(title.tmd.content_records)} "
                       f"(Content ID: {title.tmd.content_records[content].content_id})...")
