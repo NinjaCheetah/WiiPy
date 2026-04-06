@@ -17,15 +17,14 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v6
     - name: Install ccache for Nuitka
       run: |
         sudo apt update && \
         sudo apt install -y ccache patchelf
-    - name: Set up Python 3.12
-      uses: actions/setup-python@v5
+    - uses: actions/setup-python@v6
       with:
-        python-version: "3.12"
+        python-version: "3.13"
     - name: Install Dependencies
       run: |
         python -m pip install --upgrade pip
@@ -38,7 +37,7 @@ jobs:
         cd ~
         tar cvf WiiPy.tar wiipy
     - name: Upload Application
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v7
       with:
         path: ~/WiiPy.tar
         name: WiiPy-Linux-bin
@@ -48,11 +47,10 @@ jobs:
     runs-on: macos-latest
 
     steps:
-      - uses: actions/checkout@v4
-      - name: Set up Python 3.12
-        uses: actions/setup-python@v5
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
         with:
-          python-version: "3.12"
+          python-version: "3.13"
       - name: Install Dependencies
         run: |
           python -m pip install --upgrade pip
@@ -65,7 +63,7 @@ jobs:
           cd ~
           tar cvf WiiPy.tar wiipy
       - name: Upload Application
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           path: ~/WiiPy.tar
           name: WiiPy-macOS-x86_64-bin
@@ -75,11 +73,10 @@ jobs:
     runs-on: macos-latest
 
     steps:
-      - uses: actions/checkout@v4
-      - name: Set up Python 3.12
-        uses: actions/setup-python@v5
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
         with:
-          python-version: "3.12"
+          python-version: "3.13"
       - name: Install Dependencies
         run: |
           python -m pip install --upgrade pip
@@ -92,7 +89,7 @@ jobs:
           cd ~
           tar cvf WiiPy.tar wiipy
       - name: Upload Application
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           path: ~/WiiPy.tar
           name: WiiPy-macOS-arm64-bin
@@ -102,13 +99,12 @@ jobs:
     runs-on: windows-latest
 
     steps:
-    - uses: actions/checkout@v4
-    - name: Enable Developer Command Prompt
-      uses: ilammy/msvc-dev-cmd@v1.13.0
-    - name: Set up Python 3.12
-      uses: actions/setup-python@v5
+    - uses: actions/checkout@v6
+#    - name: Enable Developer Command Prompt
+#      uses: ilammy/msvc-dev-cmd@v1.13.0
+    - uses: actions/setup-python@v6
       with:
-        python-version: "3.12"
+        python-version: "3.13"
     - name: Install Dependencies
       run: |
         python -m pip install --upgrade pip
@@ -116,7 +112,7 @@ jobs:
     - name: Build Application
       run: .\Build.ps1
     - name: Upload Application
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v7
       with:
         path: D:\a\WiiPy\WiiPy\WiiPy.dist
         name: WiiPy-Windows-bin
