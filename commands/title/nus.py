@@ -12,6 +12,10 @@ def handle_nus_content(args):
     tid = args.tid
     cid = args.cid
     version = args.version
+    if args.title_key is not None:
+      title_key = bytes.fromhex(args.title_key).decode("utf-8")
+    else:
+      title_key = None
     if args.decrypt:
         decrypt_content = True
     else:
@@ -50,11 +54,12 @@ def handle_nus_content(args):
         tmd.load(libWiiPy.title.download_tmd(tid, version))
         # Try to get a Ticket for the title, if a common one is available.
         ticket = None
-        try:
-            ticket = libWiiPy.title.Ticket()
-            ticket.load(libWiiPy.title.download_ticket(tid, wiiu_endpoint=True))
-        except ValueError:
-            fatal_error("No Ticket is available! Content cannot be decrypted.")
+        if title_key is None:
+          try:
+              ticket = libWiiPy.title.Ticket()
+              ticket.load(libWiiPy.title.download_ticket(tid, wiiu_endpoint=True))
+          except ValueError:
+              fatal_error("No Ticket is available, and no Title Key was given! Content cannot be decrypted.")
 
         content_hash = 'gggggggggggggggggggggggggggggggggggggggg'
         content_size = 0
@@ -72,7 +77,7 @@ def handle_nus_content(args):
 
         # Manually decrypt the content and verify its hash, which is what libWiiPy's get_content() methods do. We just
         # can't really use that here because that require setting up a lot more of the title than is necessary.
-        content_dec = libWiiPy.title.decrypt_content(content_data, ticket.get_title_key(), content_index, content_size)
+        content_dec = libWiiPy.title.decrypt_content(content_data, title_key or ticket.get_title_key(), content_index, content_size)
         content_dec_hash = hashlib.sha1(content_dec).hexdigest()
         if content_hash != content_dec_hash:
             fatal_error("The decrypted content provided does not match the record at the provided index. \n"
@@ -91,6 +96,10 @@ def handle_nus_title(args):
     output_dir = None
     can_decrypt = False
     tid = args.tid
+    if args.title_key is not None:
+      title_key = bytes.fromhex(args.title_key).decode("utf-8")
+    else:
+      title_key = None
     wiiu_nus_enabled = False if args.wii else True
     endpoint_override = args.endpoint if args.endpoint else None
 
@@ -139,19 +148,22 @@ def handle_nus_title(args):
         output_dir.joinpath(f"tmd.{title_version}").write_bytes(title.tmd.dump())
 
     # Download the ticket, if we can.
-    print(" - Downloading and parsing Ticket...")
-    try:
-        title.load_ticket(libWiiPy.title.download_ticket(tid, wiiu_endpoint=wiiu_nus_enabled,
-                                                         endpoint_override=endpoint_override))
-        can_decrypt = True
-        if output_dir is not None:
-            output_dir.joinpath("tik").write_bytes(title.ticket.dump())
-    except ValueError:
-        # If libWiiPy returns an error, then no ticket is available. Log this, and disable options requiring a
-        # ticket so that they aren't attempted later.
-        print("  - No Ticket is available!")
-        if wad_file is not None and output_dir is None:
-            fatal_error("--wad was passed, but this title has no common ticket and cannot be packed into a WAD!")
+    if title_key is None:
+      print(" - Downloading and parsing Ticket...")
+      try:
+          title.load_ticket(libWiiPy.title.download_ticket(tid, wiiu_endpoint=wiiu_nus_enabled,
+                                                           endpoint_override=endpoint_override))
+          can_decrypt = True
+          if output_dir is not None:
+              output_dir.joinpath("tik").write_bytes(title.ticket.dump())
+      except ValueError:
+          # If libWiiPy returns an error, then no ticket is available. Log this, and disable options requiring a
+          # ticket so that they aren't attempted later.
+          print("  - No Ticket is available!")
+          if wad_file is not None and output_dir is None:
+              fatal_error("--wad was passed, but this title has no common ticket, and no title key was given so it cannot be packed into a WAD!")
+    else:
+      can_decrypt = True
 
     # Load the content records from the TMD, and begin iterating over the records.
     title.load_content_records()
@@ -183,7 +195,7 @@ def handle_nus_title(args):
                 content_file_name = f"{title.tmd.content_records[content].content_id:08X}".lower() + ".app"
                 output_dir.joinpath(content_file_name).write_bytes(dec_content)
         else:
-            print("Title has no Ticket, so content will not be decrypted!")
+            print("Title has no Ticket, and no Title Key was provided, so content will not be decrypted!")
 
     # If --wad was passed, pack a WAD and output that.
     if wad_file is not None:
