@@ -192,6 +192,8 @@ if __name__ == "__main__":
                                   action="store_true")
     nus_title_parser.add_argument("-e", "--endpoint", metavar="ENDPOINT", type=str,
                                   help="use the specified NUS endpoint instead of the official one")
+    nus_title_parser.add_argument("-k", "--title-key", metavar="KEY", type=str,
+                                  help="The Title Key incase a ticket cannot be loaded (in hexadecimal format)")
     # Content NUS subcommand.
     nus_content_parser = nus_subparsers.add_parser("content", help="download a specific content from the NUS",
                                                    description="download a specific content from the NUS")
@@ -204,6 +206,8 @@ if __name__ == "__main__":
     nus_content_parser.add_argument("-o", "--output", metavar="OUT", type=str,
                                     help="path to download the content to (optional)")
     nus_content_parser.add_argument("-d", "--decrypt", action="store_true", help="decrypt this content")
+    nus_content_parser.add_argument("-k", "--title-key", metavar="KEY", type=str,
+                                    help="The Title Key incase a ticket cannot be loaded (in hexadecimal format)")
     # TMD NUS subcommand.
     nus_tmd_parser = nus_subparsers.add_parser("tmd", help="download a tmd from the NUS",
                                                description="download a tmd from the NUS")
