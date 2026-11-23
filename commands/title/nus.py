@@ -13,7 +13,7 @@ def handle_nus_content(args):
     cid = args.cid
     version = args.version
     if args.title_key is not None:
-      title_key = bytes.fromhex(args.title_key).decode("utf-8")
+      title_key = bytes.fromhex(args.title_key)
     else:
       title_key = None
     if args.decrypt:
@@ -97,7 +97,7 @@ def handle_nus_title(args):
     can_decrypt = False
     tid = args.tid
     if args.title_key is not None:
-      title_key = bytes.fromhex(args.title_key).decode("utf-8")
+      title_key = bytes.fromhex(args.title_key)
     else:
       title_key = None
     wiiu_nus_enabled = False if args.wii else True
